@@ -9,7 +9,7 @@ namespace ZTP___Statki
     static class Program
     {
         /// <summary>
-        /// Główny punkt wejścia dla aplikacji.
+        /// Główny punkt wejścia dla aplikacji
         /// </summary>
         [STAThread]
         static void Main()
