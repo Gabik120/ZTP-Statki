@@ -91,13 +91,14 @@ namespace ZTP___Statki
             _builder = builder;
         }
 
-        public void Construct(int dimension)
+        public void Construct()
         {
-            _builder.SetDimensions(dimension);
+            int rozmiar = Settings.Instance.wymiar;
+            _builder.SetDimensions(rozmiar);
 
-            for (int r = 0; r < dimension; r++)
+            for (int r = 0; r < rozmiar; r++)
             {
-                for (int c = 0; c < dimension; c++)
+                for (int c = 0; c < rozmiar; c++)
                 {
                     _builder.BuildTile(r, c);
                 }

@@ -19,7 +19,7 @@ namespace ZTP___Statki
 
         private void ResizeTable(TableLayoutPanel table)
         {
-            int wymiar = table.ColumnCount;
+            int wymiar = Settings.Instance.wymiar;
             int bok = Math.Min(table.Parent.ClientSize.Width,
                 table.Parent.ClientSize.Height);
             bok /= 2;
@@ -29,10 +29,9 @@ namespace ZTP___Statki
 
         private void btn_start_Click(object sender, EventArgs e)
         {
-            int wymiar = 5;
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
-            director.Construct(wymiar);
+            director.Construct();
             TableLayoutPanel nowaPlansza = builder.GetProduct();
             tablePlanszaGracza.Controls.Clear();
             tablePlanszaGracza.Controls.Add(nowaPlansza);
