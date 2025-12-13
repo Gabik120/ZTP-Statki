@@ -56,6 +56,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Statki.cs" />
     <EmbeddedResource Include="FormPlansza.resx">
       <DependentUpon>FormPlansza.cs</DependentUpon>
     </EmbeddedResource>
