@@ -124,7 +124,7 @@ namespace ZTP___Statki
 
                 if (x >= back.Rozmiar || y >= back.Rozmiar) continue;
 
-                Control c = front.GetControlFromPosition(y, x);
+                Control c = front.GetControlFromPosition(y + 1, x + 1);
 
                 if (c is PictureBox box)
                 {

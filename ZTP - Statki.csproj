@@ -58,6 +58,7 @@
     <Compile Include="FormRozstawianie.Designer.cs">
       <DependentUpon>FormRozstawianie.cs</DependentUpon>
     </Compile>
+    <Compile Include="KomputerGracz.cs" />
     <Compile Include="PlanszaBuilder.cs" />
     <Compile Include="PlanszaLogiczna.cs" />
     <Compile Include="Program.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="RozstawiaczStatkow.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Statki.cs" />
+    <Compile Include="StrategiaAI.cs" />
     <EmbeddedResource Include="FormPlansza.resx">
       <DependentUpon>FormPlansza.cs</DependentUpon>
     </EmbeddedResource>

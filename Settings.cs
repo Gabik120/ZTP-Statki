@@ -12,7 +12,7 @@ namespace ZTP___Statki
     class Settings
     {
         private static Settings instance = null;
-        public int wymiar { get; set; } = 5;
+        public int wymiar { get; set; } = 10;
         public Difficulty trudnosc = Difficulty.Latwy;
         private Settings()
         {

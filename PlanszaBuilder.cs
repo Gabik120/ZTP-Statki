@@ -15,6 +15,7 @@ namespace ZTP___Statki
         void BuildTile(int row, int col);
         TableLayoutPanel GetProduct();
     }
+
     public class DanePola
     {
         public Point Wspolrzedne { get; set; }
@@ -25,6 +26,7 @@ namespace ZTP___Statki
             Wspolrzedne = new Point(x, y);
         }
     }
+
     class PlanszaBuilder : IPlanszaBuilder
     {
         private TableLayoutPanel _table;
@@ -48,11 +50,14 @@ namespace ZTP___Statki
         public void SetDimensions(int dimension)
         {
             _dimension = dimension;
-            _table.ColumnCount = dimension;
-            _table.RowCount = dimension;
+            _table.ColumnCount = dimension + 1;
+            _table.RowCount = dimension + 1;
 
             _table.ColumnStyles.Clear();
             _table.RowStyles.Clear();
+
+            _table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 25f));
+            _table.RowStyles.Add(new RowStyle(SizeType.Absolute, 25f));
 
             float percent = 100f / _dimension;
 
@@ -60,6 +65,35 @@ namespace ZTP___Statki
             {
                 _table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, percent));
                 _table.RowStyles.Add(new RowStyle(SizeType.Percent, percent));
+            }
+
+            _table.Controls.Add(new Label() { Text = "", Dock = DockStyle.Fill }, 0, 0);
+
+            for (int i = 0; i < _dimension; i++)
+            {
+                char litera = (char)('A' + i);
+                Label lbl = new Label
+                {
+                    Text = litera.ToString(),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Arial", 8, FontStyle.Bold),
+                    BackColor = Color.LightGray
+                };
+                _table.Controls.Add(lbl, i + 1, 0);
+            }
+
+            for (int i = 0; i < _dimension; i++)
+            {
+                Label lbl = new Label
+                {
+                    Text = (i + 1).ToString(),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Arial", 8, FontStyle.Bold),
+                    BackColor = Color.LightGray
+                };
+                _table.Controls.Add(lbl, 0, i + 1);
             }
         }
 
@@ -73,15 +107,8 @@ namespace ZTP___Statki
                 BorderStyle = BorderStyle.FixedSingle,
                 Tag = new DanePola(row, col)
             };
-            /*
-            tile.Click += (s, e) =>
-            {
-                PictureBox p = s as PictureBox;
-                p.BackColor = Color.Red;
-            
-            */
 
-            _table.Controls.Add(tile, col, row);
+            _table.Controls.Add(tile, col + 1, row + 1);
         }
 
         public TableLayoutPanel GetProduct()

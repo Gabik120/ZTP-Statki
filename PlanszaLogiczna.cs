@@ -119,5 +119,10 @@ namespace ZTP___Statki
             }
             return true;
         }
+        public bool CzyPoleOdkryte(int x, int y)
+        {
+            if (x < 0 || x >= Rozmiar || y < 0 || y >= Rozmiar) return true;
+            return _polaOdkryte[x, y];
+        }
     }
 }
