@@ -52,13 +52,24 @@
     <Compile Include="FormPlansza.Designer.cs">
       <DependentUpon>FormPlansza.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormRozstawianie.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormRozstawianie.Designer.cs">
+      <DependentUpon>FormRozstawianie.cs</DependentUpon>
+    </Compile>
     <Compile Include="PlanszaBuilder.cs" />
+    <Compile Include="PlanszaLogiczna.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RozstawiaczStatkow.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Statki.cs" />
     <EmbeddedResource Include="FormPlansza.resx">
       <DependentUpon>FormPlansza.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormRozstawianie.resx">
+      <DependentUpon>FormRozstawianie.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 
 namespace ZTP___Statki
 {
+
+    public enum Difficulty {Latwy,Sredni,Trudny }
     class Settings
     {
         private static Settings instance = null;
         public int wymiar { get; set; } = 5;
+        public Difficulty trudnosc = Difficulty.Latwy;
         private Settings()
         {
         }

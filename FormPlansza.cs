@@ -33,16 +33,23 @@ namespace ZTP___Statki
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
             director.Construct();
             TableLayoutPanel nowaPlansza = builder.GetProduct();
-            tablePlanszaGracza.Controls.Clear();
-            tablePlanszaGracza.Controls.Add(nowaPlansza);
+
+            nowaPlansza.Name = tablePlanszaGracza.Name;
+            nowaPlansza.Parent = this;
+
+            this.Controls.Remove(tablePlanszaGracza);
+            this.Controls.Add(nowaPlansza);
+            tablePlanszaGracza = nowaPlansza;
+
             ResizeTable(tablePlanszaGracza);
             tablePlanszaGracza.Location = TabelaGraczPozycja();
+
         }
 
         private Point TabelaGraczPozycja()
         {
-            return new Point(tablePlanszaGracza.Parent.ClientSize.Width / 6,
-                tablePlanszaGracza.Parent.ClientSize.Height / 3);
+            return new Point(tablePlanszaGracza.ClientSize.Width / 6,
+                tablePlanszaGracza.ClientSize.Height / 3);
         }
         private void FormPlansza_Resize(object sender, EventArgs e)
         {

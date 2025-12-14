@@ -37,13 +37,9 @@ namespace ZTP___Statki
             // tablePlanszaGracza
             // 
             this.tablePlanszaGracza.ColumnCount = 1;
-            this.tablePlanszaGracza.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tablePlanszaGracza.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tablePlanszaGracza.Location = new System.Drawing.Point(200, 150);
             this.tablePlanszaGracza.Name = "tablePlanszaGracza";
             this.tablePlanszaGracza.RowCount = 1;
-            this.tablePlanszaGracza.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tablePlanszaGracza.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tablePlanszaGracza.Size = new System.Drawing.Size(250, 250);
             this.tablePlanszaGracza.TabIndex = 0;
             // 

@@ -15,6 +15,16 @@ namespace ZTP___Statki
         void BuildTile(int row, int col);
         TableLayoutPanel GetProduct();
     }
+    public class DanePola
+    {
+        public Point Wspolrzedne { get; set; }
+        public Statek Statek { get; set; }
+
+        public DanePola(int x, int y)
+        {
+            Wspolrzedne = new Point(x, y);
+        }
+    }
     class PlanszaBuilder : IPlanszaBuilder
     {
         private TableLayoutPanel _table;
@@ -29,7 +39,7 @@ namespace ZTP___Statki
         {
             _table = new TableLayoutPanel
             {
-                Dock = DockStyle.Fill,
+                Dock = DockStyle.None,
                 BackColor = Color.White,
                 Margin = new Padding(0)
             };
@@ -57,11 +67,11 @@ namespace ZTP___Statki
         {
             PictureBox tile = new PictureBox
             {
-                BackColor = Color.BurlyWood,
+                BackColor = Color.DodgerBlue,
                 Dock = DockStyle.Fill,
                 Margin = new Padding(1),
                 BorderStyle = BorderStyle.FixedSingle,
-                Tag = new Point(row, col)
+                Tag = new DanePola(row, col)
             };
             /*
             tile.Click += (s, e) =>
