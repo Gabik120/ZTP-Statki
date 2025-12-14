@@ -6,14 +6,26 @@ using System.Threading.Tasks;
 
 namespace ZTP___Statki
 {
-    class PlanszaLogiczna
+    public enum WynikStrzalu
+    {
+        Pudlo,
+        Trafienie,
+        Zatopienie,
+        JuzStrzelano,
+        Blad
+    }
+    public class PlanszaLogiczna
     {
         public int Rozmiar { get; private set; }
         public Statek[,] Siatka { get; private set; }
+        private bool[,] _polaOdkryte;
+        public event Action<int, int, WynikStrzalu> ZmianaStanuPola;
+
         public PlanszaLogiczna()
         {
             Rozmiar = Settings.Instance.wymiar;
             Siatka = new Statek[Rozmiar, Rozmiar];
+            _polaOdkryte = new bool[Rozmiar, Rozmiar];
         }
 
         public bool CzyMoznaPostawic(Statek statek, int x, int y, bool pionowo)
@@ -22,7 +34,7 @@ namespace ZTP___Statki
             {
                 if (y + statek.Dlugosc > Rozmiar) return false;
             }
-            else 
+            else
             {
                 if (x + statek.Dlugosc > Rozmiar) return false;
             }
@@ -48,7 +60,6 @@ namespace ZTP___Statki
                     }
                 }
             }
-
             return true;
         }
 
@@ -61,6 +72,52 @@ namespace ZTP___Statki
 
                 Siatka[celX, celY] = statek;
             }
+        }
+
+        public WynikStrzalu Strzal(int x, int y)
+        {
+            if (x < 0 || x >= Rozmiar || y < 0 || y >= Rozmiar)
+                return WynikStrzalu.Blad;
+
+            if (_polaOdkryte[x, y])
+                return WynikStrzalu.JuzStrzelano;
+
+            _polaOdkryte[x, y] = true;
+
+            Statek trafiony = Siatka[x, y];
+            WynikStrzalu wynik;
+
+            if (trafiony == null)
+            {
+                wynik = WynikStrzalu.Pudlo;
+            }
+            else
+            {
+                trafiony.Trafienie();
+                if (trafiony.CzyZatopiony)
+                {
+                    wynik = WynikStrzalu.Zatopienie;
+                }
+                else
+                {
+                    wynik = WynikStrzalu.Trafienie;
+                }
+            }
+
+            ZmianaStanuPola?.Invoke(x, y, wynik);
+            return wynik;
+        }
+
+        public bool CzyWszystkieStatkiZatopione()
+        {
+            foreach (var statek in Siatka)
+            {
+                if (statek != null && !statek.CzyZatopiony)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

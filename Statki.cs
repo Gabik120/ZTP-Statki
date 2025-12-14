@@ -27,9 +27,12 @@ namespace ZTP___Statki
             if (Zycie > 0)
             {
                 Zycie--;
+                if (Zycie == 0)
+                {
+                    CzyZatopiony = true;
+                }
             }
-            else
-                CzyZatopiony = true;
+            
         }
     }
 
