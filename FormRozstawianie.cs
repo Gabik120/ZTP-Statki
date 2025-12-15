@@ -9,14 +9,16 @@ namespace ZTP___Statki
     {
         private RozstawiaczStatkow _rozstawiacz;
         private Button _btnCofnij;
+        private ComboBox _comboPoziom;
 
         public FormRozstawianie()
         {
             InitializeComponent();
-
             this.StartPosition = FormStartPosition.CenterScreen;
             this.ClientSize = new Size(1200, 900);
+
             DodajPrzyciskCofnij();
+            DodajWyborPoziomu();
         }
 
         private void DodajPrzyciskCofnij()
@@ -29,16 +31,26 @@ namespace ZTP___Statki
             this.Controls.Add(_btnCofnij);
         }
 
+        private void DodajWyborPoziomu()
+        {
+            Label lbl = new Label();
+            lbl.Text = "Poziom:";
+            lbl.Location = new Point(200, 55);
+            this.Controls.Add(lbl);
+
+            _comboPoziom = new ComboBox();
+            _comboPoziom.Location = new Point(260, 50);
+            _comboPoziom.DataSource = Enum.GetValues(typeof(Difficulty));
+            _comboPoziom.SelectedItem = Settings.Instance.trudnosc;
+            this.Controls.Add(_comboPoziom);
+        }
+
         private void ResizeTable(TableLayoutPanel table)
         {
             int wymiar = Settings.Instance.wymiar;
-
             int bok = Math.Min(table.Parent.ClientSize.Width, table.Parent.ClientSize.Height);
-
             bok = (int)(bok * 0.8);
-
             bok = bok - (bok % wymiar);
-
             table.Size = new Size(bok, bok);
         }
 
@@ -63,24 +75,20 @@ namespace ZTP___Statki
 
             GraFasada fasada = new GraFasada();
             PlanszaLogiczna back = fasada.UtworzPustaPlansze();
-            List<Statek> flota = fasada.UtworzStandardowaFlote();
 
-            List<Statek> flota = new List<Statek>
-            {
-                new FabrykaPancernikow().StworzStatek(),
-                new FabrykaKrazownikow().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek()
-            };
+            List<Statek> flota = fasada.UtworzStandardowaFlote();
 
             _rozstawiacz = new RozstawiaczStatkow(back, tablePlanszaRozstawianie, flota);
 
             _rozstawiacz.RozmieszczanieZakonczone += (s, args) =>
             {
-                // Zapisz stan początkowy dla Replaya (Gracz)
-                var ukladGracza = back.PobierzUstawienieStatkow();
-                // Dla komputera zapiszemy w FormPlansza, bo tam jest generowany
-                HistoriaGry.Instance.ZapiszRozstawienie(ukladGracza, null);
+                 if (_comboPoziom != null && _comboPoziom.SelectedItem != null)
+                {
+                    Settings.Instance.trudnosc = (Difficulty)_comboPoziom.SelectedItem;
+                }
+                 var ukladGracza = back.PobierzUstawienieStatkow();
+
+                 HistoriaGry.Instance.ZapiszRozstawienie(ukladGracza, null);
 
                 FormPlansza gra = new FormPlansza(back);
                 this.Hide();

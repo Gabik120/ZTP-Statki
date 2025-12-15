@@ -13,7 +13,6 @@ namespace ZTP___Statki
             InitializeComponent();
         }
 
-        // Dodano słowo 'async' i wywołanie przez 'await' aby pozbyć się ostrzeżenia
         private async void FormReplay_Load(object sender, EventArgs e)
         {
             ZbudujPlansze(tablePlanszaGracza);
@@ -77,7 +76,11 @@ namespace ZTP___Statki
                     PictureBox box = tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
                     if (box != null)
                     {
-                        box.BackColor = Color.Gray;
+                        if (box.Tag is DanePola dane)
+                        {
+                            dane.Statek = info.Statek;
+                        }
+                        box.BackColor = Settings.Instance.KolorStatku;
                     }
                 }
             }
@@ -87,9 +90,11 @@ namespace ZTP___Statki
         {
             var ruchy = HistoriaGry.Instance.Ruchy;
 
+            if (ruchy == null || ruchy.Count == 0) return;
+
             foreach (var ruch in ruchy)
             {
-                await Task.Delay(600);
+                await Task.Delay(180);
 
                 TableLayoutPanel targetTable = ruch.CzyStrzalWGracza ? tablePlanszaGracza : tablePlanszaKomputera;
                 PictureBox pole = targetTable.GetControlFromPosition(ruch.Y + 1, ruch.X + 1) as PictureBox;
@@ -99,20 +104,42 @@ namespace ZTP___Statki
                     switch (ruch.Wynik)
                     {
                         case WynikStrzalu.Pudlo:
-                            pole.BackColor = Color.LightBlue;
+                            pole.BackColor = Settings.Instance.KolorPudlo;
                             break;
                         case WynikStrzalu.Trafienie:
-                            pole.BackColor = Color.OrangeRed;
+                            pole.BackColor = Settings.Instance.KolorTrafiony;
                             break;
                         case WynikStrzalu.Zatopienie:
-                            pole.BackColor = Color.DarkRed;
+                            PomalujZatopionyStatek(targetTable, pole);
                             break;
                     }
+                    pole.Refresh();
                 }
             }
 
             string zwyciezca = HistoriaGry.Instance.Zwyciezca;
             MessageBox.Show($"Koniec powtórki. Wygrał: {zwyciezca}", "Replay", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void PomalujZatopionyStatek(TableLayoutPanel tabela, PictureBox ostatniTrafionyBox)
+        {
+            if (!(ostatniTrafionyBox.Tag is DanePola daneOstatniego) || daneOstatniego.Statek == null)
+                return;
+
+            Statek zatopionyStatek = daneOstatniego.Statek;
+
+            foreach (Control c in tabela.Controls)
+            {
+                if (c is PictureBox pole && c.Tag is DanePola dane)
+                {
+                    if (dane.Statek == zatopionyStatek)
+                    {
+                        pole.BackColor = Settings.Instance.KolorZatopiony;
+                        pole.BorderStyle = BorderStyle.Fixed3D;
+                        pole.Refresh();
+                    }
+                }
+            }
         }
 
         private void FormReplay_Resize(object sender, EventArgs e)

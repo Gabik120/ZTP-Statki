@@ -26,31 +26,28 @@ namespace ZTP___Statki
             IStrategiaStrzelania strategia;
             switch (Settings.Instance.trudnosc)
             {
-                case Difficulty.Sredni:
+                case Difficulty.Średni:
                     strategia = new StrategiaSrednia();
                     break;
-                case Difficulty.Zaawansowany:
+                case Difficulty.Ekspert:
                     strategia = new StrategiaTrudna();
                     break;
-                case Difficulty.Amator:
+                case Difficulty.Łatwy:
                 default:
                     strategia = new StrategiaLosowa();
                     break;
             }
 
             GraFasada fasada = new GraFasada();
-
             _komputer = new KomputerGracz(strategia);
 
             List<Statek> flotaKomputera = fasada.UtworzStandardowaFlote();
             _komputer.LosujUstawienieStatkow(flotaKomputera);
 
-            // Zapisz stan dla Replay
             HistoriaGry.Instance.ZapiszRozstawienie(null, _komputer.Plansza.PobierzUstawienieStatkow());
 
             BudujWidokPlanszy(_planszaGracza, tablePlanszaGracza, false);
             BudujWidokPlanszy(_komputer.Plansza, tablePlanszaKomputera, true);
-        }
 
             this.StartPosition = FormStartPosition.CenterScreen;
             this.ClientSize = new Size(1200, 900);
@@ -65,22 +62,11 @@ namespace ZTP___Statki
             }
             catch { }
         }
-        private List<Statek> GenerujFlote()
-        {
-            return new List<Statek>
-            {
-                new FabrykaPancernikow().StworzStatek(),
-                new FabrykaKrazownikow().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek()
-            };
-        }
 
         private void BudujWidokPlanszy(PlanszaLogiczna plansza, TableLayoutPanel tabela, bool czyInteraktywna)
         {
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
-
             director.Construct();
             TableLayoutPanel tempTable = builder.GetProduct();
 
@@ -135,12 +121,10 @@ namespace ZTP___Statki
             {
                 var pos = zrodlo.GetPositionFromControl(c);
                 zrodlo.Controls.Remove(c);
-                cel.Controls.Add(c);
+
                 if (c.Tag is DanePola dp)
                     cel.Controls.Add(c, dp.Wspolrzedne.Y + 1, dp.Wspolrzedne.X + 1);
                 else
-                {
-                    var pos = zrodlo.GetPositionFromControl(c);
                     cel.Controls.Add(c, pos.Column, pos.Row);
             }
         }
@@ -153,7 +137,6 @@ namespace ZTP___Statki
             KomendaStrzalu strzal = new KomendaStrzalu(_komputer.Plansza, x, y, false);
             strzal.Wykonaj();
             HistoriaGry.Instance.DodajRuch(strzal);
-            WynikStrzalu wynik = _komputer.Plansza.Strzal(x, y);
 
             WynikStrzalu wynik = strzal.Wynik;
             ZaktualizujWygladPola(pole, wynik);
@@ -178,8 +161,6 @@ namespace ZTP___Statki
             if (_komputer.Plansza.CzyWszystkieStatkiZatopione())
             {
                 if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
-                MessageBox.Show("Zwycięstwo!", "Koniec", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.Close();
                 HistoriaGry.Instance.Zwyciezca = "Gracz";
                 KoniecGry("Zwycięstwo!");
                 return;
@@ -218,8 +199,6 @@ namespace ZTP___Statki
                 if (_planszaGracza.CzyWszystkieStatkiZatopione())
                 {
                     if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
-                    MessageBox.Show("Przegrana! Twoja flota została zniszczona.", "Koniec gry", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    this.Close();
                     HistoriaGry.Instance.Zwyciezca = "Komputer";
                     KoniecGry("Przegrana!");
                     return;
@@ -292,7 +271,6 @@ namespace ZTP___Statki
                 }
             }
             return null;
-            return tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
         }
 
         private void FormPlansza_Resize(object sender, EventArgs e)
