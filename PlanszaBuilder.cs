@@ -101,7 +101,7 @@ namespace ZTP___Statki
         {
             PictureBox tile = new PictureBox
             {
-                BackColor = Color.DodgerBlue,
+                BackColor = Settings.Instance.KolorWody,
                 Dock = DockStyle.Fill,
                 Margin = new Padding(1),
                 BorderStyle = BorderStyle.FixedSingle,

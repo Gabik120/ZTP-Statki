@@ -20,51 +20,35 @@ namespace ZTP___Statki
             InitializeComponent();
         }
 
-        // Główny konstruktor gry
         public FormPlansza(PlanszaLogiczna planszaGracza) : this()
         {
             _planszaGracza = planszaGracza;
 
-            // Inicjalizacja Komputera
-            IStrategiaStrzelania strategia = new StrategiaLosowa(); // Tu można podpiąć trudniejszą strategię z Settings
+            GraFasada fasada = new GraFasada();
+
+            IStrategiaStrzelania strategia = fasada.UtworzStrategieDlaKomputera();
             _komputer = new KomputerGracz(strategia);
 
-            // Losowanie floty komputera
-            List<Statek> flotaKomputera = GenerujFlote();
+            List<Statek> flotaKomputera = fasada.UtworzStandardowaFlote();
             _komputer.LosujUstawienieStatkow(flotaKomputera);
 
-            // Budowanie widoków
-            BudujWidokPlanszy(_planszaGracza, tablePlanszaGracza, false); // false = widok gracza (widzi swoje)
-            BudujWidokPlanszy(_komputer.Plansza, tablePlanszaKomputera, true); // true = widok interaktywny (ukryty)
-        }
+            BudujWidokPlanszy(_planszaGracza, tablePlanszaGracza, false);
+            BudujWidokPlanszy(_komputer.Plansza, tablePlanszaKomputera, true);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ClientSize = new Size(1200, 900); 
 
-        private List<Statek> GenerujFlote()
-        {
-            // Taka sama flota jak gracza
-            return new List<Statek>
-            {
-                new FabrykaPancernikow().StworzStatek(),
-                new FabrykaKrazownikow().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek()
-            };
+            FormPlansza_Resize(this, EventArgs.Empty);
         }
 
         private void BudujWidokPlanszy(PlanszaLogiczna plansza, TableLayoutPanel tabela, bool czyInteraktywna)
         {
-            // Wyczyszczenie i zbudowanie struktury tabeli
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
-
-            // Hack: Builder tworzy nową tabelę, my chcemy użyć istniejącej z designera lub podmienić
-            // W tym przypadku prościej jest skonfigurować istniejącą tabelę na wzór buildera
             director.Construct();
             TableLayoutPanel tempTable = builder.GetProduct();
 
-            // Kopiujemy konfigurację wierszy/kolumn i kontrolek do naszej tabeli z Designera
             KopiujStruktureTabeli(tempTable, tabela);
 
-            // Konfiguracja pól
             foreach (Control c in tabela.Controls)
             {
                 if (c is PictureBox box && c.Tag is DanePola dane)
@@ -72,17 +56,22 @@ namespace ZTP___Statki
                     int x = dane.Wspolrzedne.X;
                     int y = dane.Wspolrzedne.Y;
 
-                    // Jeśli to plansza gracza, pokaż statki od razu
+                    dane.Statek = plansza.Siatka[x, y];
+
                     if (!czyInteraktywna)
                     {
                         if (plansza.Siatka[x, y] != null)
                         {
-                            box.BackColor = Color.Gray; // Statek gracza
+                            box.BackColor = Settings.Instance.KolorStatku;
+                        }
+                        else
+                        {
+                            box.BackColor = Settings.Instance.KolorWody;
                         }
                     }
                     else
                     {
-                        // To jest plansza przeciwnika - podpinamy zdarzenie kliknięcia (Strzał)
+                        box.BackColor = Settings.Instance.KolorWody;
                         box.MouseClick += (s, e) => WykonajStrzalGracza(x, y, box);
                         box.Cursor = Cursors.Hand;
                     }
@@ -107,47 +96,35 @@ namespace ZTP___Statki
             for (int i = 0; i < zrodlo.RowStyles.Count; i++)
                 cel.RowStyles.Add(new RowStyle(zrodlo.RowStyles[i].SizeType, zrodlo.RowStyles[i].Height));
 
-            // Przenoszenie kontrolek (musimy tworzyć nowe instancje PictureBox, bo kontrolka ma jednego rodzica)
-            // Uproszczenie: Używamy logiki buildera wprost na docelowym obiekcie w prawdziwym refactoringu,
-            // ale tutaj zrobimy "przepinanie" ręczne dla spójności.
-
-            // Ponieważ builder już stworzył PictureBoxy z odpowiednimi Tagami, możemy je "ukraść" do naszej tabeli
-            // Uwaga: Iterujemy od tyłu lub kopiujemy listę, żeby nie modyfikować kolekcji po której iterujemy
             var controls = new List<Control>();
             foreach (Control c in zrodlo.Controls) controls.Add(c);
 
             foreach (var c in controls)
             {
                 zrodlo.Controls.Remove(c);
-                cel.Controls.Add(c); // Pozycja w TableLayout jest zachowana wewnątrz kontrolki? Nie zawsze.
-                // Musimy ustawić komórkę ręcznie
+                cel.Controls.Add(c); 
                 if (c.Tag is DanePola dp)
                 {
                     cel.Controls.Add(c, dp.Wspolrzedne.Y + 1, dp.Wspolrzedne.X + 1);
                 }
                 else
                 {
-                    // Etykiety A, B, C...
                     var pos = zrodlo.GetPositionFromControl(c);
                     cel.Controls.Add(c, pos.Column, pos.Row);
                 }
             }
         }
 
-        // --- GAME LOOP ---
 
         private void WykonajStrzalGracza(int x, int y, PictureBox pole)
         {
             if (!_turaGracza) return;
             if (_komputer.Plansza.CzyPoleOdkryte(x, y)) return;
 
-            // 1. Logika strzału
             WynikStrzalu wynik = _komputer.Plansza.Strzal(x, y);
 
-            // 2. Wizualizacja
             ZaktualizujWygladPola(pole, wynik);
 
-            // 3. Sprawdzenie zwycięstwa
             if (_komputer.Plansza.CzyWszystkieStatkiZatopione())
             {
                 MessageBox.Show("Zwycięstwo! Wszystkie wrogie statki zatopione!", "Koniec gry", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -155,7 +132,6 @@ namespace ZTP___Statki
                 return;
             }
 
-            // 4. Jeśli pudło, tura przechodzi do komputera. Jeśli trafienie - gracz strzela dalej.
             if (wynik == WynikStrzalu.Pudlo)
             {
                 _turaGracza = false;
@@ -165,27 +141,21 @@ namespace ZTP___Statki
 
         private async void RuchKomputera()
         {
-            // Małe opóźnienie dla lepszego efektu (wymaga metody async, ale w WinForms eventy to znoszą)
-            // Tutaj zrobimy prostą pętlę, dopóki komputer trafia
             while (!_turaGracza)
             {
                 Application.DoEvents();
-                System.Threading.Thread.Sleep(500); // Symulacja myślenia
+                System.Threading.Thread.Sleep(500); 
 
-                // 1. AI wybiera cel
                 Point cel = _komputer.WykonajRuch(_planszaGracza);
 
-                // 2. Strzał w planszę gracza
                 WynikStrzalu wynik = _planszaGracza.Strzal(cel.X, cel.Y);
 
-                // 3. Wizualizacja na planszy gracza
                 PictureBox poleGracza = ZnajdzPole(tablePlanszaGracza, cel.X, cel.Y);
                 if (poleGracza != null)
                 {
                     ZaktualizujWygladPola(poleGracza, wynik);
                 }
 
-                // 4. Sprawdzenie przegranej
                 if (_planszaGracza.CzyWszystkieStatkiZatopione())
                 {
                     MessageBox.Show("Przegrana! Twoja flota została zniszczona.", "Koniec gry", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -193,7 +163,6 @@ namespace ZTP___Statki
                     return;
                 }
 
-                // 5. Jeśli komputer spudłował, oddaje turę
                 if (wynik == WynikStrzalu.Pudlo)
                 {
                     _turaGracza = true;
@@ -206,26 +175,43 @@ namespace ZTP___Statki
             switch (wynik)
             {
                 case WynikStrzalu.Pudlo:
-                    box.BackColor = Color.LightBlue; // Ślad po kuli w wodzie
-                    // Można dodać obrazek kropki
+                    box.BackColor = Settings.Instance.KolorPudlo;
                     break;
                 case WynikStrzalu.Trafienie:
-                    box.BackColor = Color.OrangeRed; // Ogień
+                    box.BackColor = Settings.Instance.KolorTrafiony;
                     break;
                 case WynikStrzalu.Zatopienie:
-                    box.BackColor = Color.DarkRed; // Zniszczony
-                    // Opcjonalnie: można tutaj znaleźć cały statek i pomalować go na czarno
+                    TableLayoutPanel tabela = (TableLayoutPanel)box.Parent;
+                    PomalujZatopionyStatek(tabela, box);
                     break;
+            }
+        }
+
+        private void PomalujZatopionyStatek(TableLayoutPanel tabela, PictureBox ostatniTrafionyBox)
+        {
+            DanePola daneOstatniego = (DanePola)ostatniTrafionyBox.Tag;
+            Statek zatopionyStatek = daneOstatniego.Statek;
+
+            if (zatopionyStatek == null) return;
+
+            foreach (Control c in tabela.Controls)
+            {
+                if (c is PictureBox pole && c.Tag is DanePola dane)
+                {
+                    if (dane.Statek == zatopionyStatek)
+                    {
+                        pole.BackColor = Settings.Instance.KolorZatopiony;
+                        pole.BorderStyle = BorderStyle.Fixed3D; 
+                    }
+                }
             }
         }
 
         private PictureBox ZnajdzPole(TableLayoutPanel tabela, int x, int y)
         {
-            // y+1 i x+1 ponieważ wiersz/kolumna 0 to etykiety
             return tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
         }
 
-        // --- UI RESIZING ---
 
         private void FormPlansza_Resize(object sender, EventArgs e)
         {
@@ -239,19 +225,17 @@ namespace ZTP___Statki
             if (table == null || table.Parent == null) return;
             int wymiar = Settings.Instance.wymiar;
 
-            // Chcemy, aby tabela zajmowała max 40% szerokości okna, żeby zmieściły się dwie
             int dostepnaSzerokosc = (this.ClientSize.Width / 2) - 40;
             int dostepnaWysokosc = this.ClientSize.Height - 100;
 
             int bok = Math.Min(dostepnaSzerokosc, dostepnaWysokosc);
-            bok = bok - (bok % wymiar); // zaokrąglenie do wymiaru
+            bok = bok - (bok % wymiar); 
 
             table.Size = new Size(bok, bok);
         }
 
         private void PozycjonujElementy()
         {
-            // Wyśrodkowanie w pionie, równomiernie w poziomie
             int srodekY = (this.ClientSize.Height - tablePlanszaGracza.Height) / 2 + 20;
 
             int margines = 50;

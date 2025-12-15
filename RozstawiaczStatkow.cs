@@ -136,10 +136,18 @@ namespace ZTP___Statki
 
                     switch (ostatecznyStan)
                     {
-                        case StanWizualny.Woda: box.BackColor = Color.DodgerBlue; break;
-                        case StanWizualny.PodgladDobry: box.BackColor = Color.LightGreen; break;
-                        case StanWizualny.PodgladZly: box.BackColor = Color.Salmon; break;
-                        case StanWizualny.Postawiony: box.BackColor = Color.Gray; break;
+                        case StanWizualny.Woda:
+                            box.BackColor = Settings.Instance.KolorWody;
+                            break;
+                        case StanWizualny.PodgladDobry:
+                            box.BackColor = Color.LightGreen;
+                            break;
+                        case StanWizualny.PodgladZly:
+                            box.BackColor = Color.LightCoral;
+                            break;
+                        case StanWizualny.Postawiony:
+                            box.BackColor = Settings.Instance.KolorStatku;
+                            break;
                     }
                 }
             }

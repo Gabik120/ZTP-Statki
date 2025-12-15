@@ -10,21 +10,26 @@ namespace ZTP___Statki
         public FormRozstawianie()
         {
             InitializeComponent();
+
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.ClientSize = new Size(1200, 900);
         }
 
         private void ResizeTable(TableLayoutPanel table)
         {
             int wymiar = Settings.Instance.wymiar;
-            int bok = Math.Min(table.Parent.ClientSize.Width,
-                table.Parent.ClientSize.Height);
-            bok /= 2;
+
+            int bok = Math.Min(table.Parent.ClientSize.Width, table.Parent.ClientSize.Height);
+
+            bok = (int)(bok * 0.8);
+
             bok = bok - (bok % wymiar);
+
             table.Size = new Size(bok, bok);
         }
 
         private void FormRozstawianie_Load(object sender, EventArgs e)
         {
-            // Budowanie planszy wizualnej
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
             director.Construct();
@@ -40,24 +45,15 @@ namespace ZTP___Statki
             ResizeTable(tablePlanszaRozstawianie);
             tablePlanszaRozstawianie.Location = TabelaPozycja();
 
-            // Logika planszy
-            PlanszaLogiczna back = new PlanszaLogiczna();
-
-            List<Statek> flota = new List<Statek>
-            {
-                new FabrykaPancernikow().StworzStatek(),
-                new FabrykaKrazownikow().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek(),
-                new FabrykaNiszczycieli().StworzStatek()
-            };
+            GraFasada fasada = new GraFasada();
+            PlanszaLogiczna back = fasada.UtworzPustaPlansze();
+            List<Statek> flota = fasada.UtworzStandardowaFlote();
 
             RozstawiaczStatkow rozstawiacz = new RozstawiaczStatkow(back, tablePlanszaRozstawianie, flota);
 
-            // --- ZMIANA TUTAJ ---
-            // Przekazujemy wypełnioną planszę 'back' do gry
             rozstawiacz.RozmieszczanieZakonczone += (s, args) =>
             {
-                FormPlansza gra = new FormPlansza(back); // Przekazanie planszy
+                FormPlansza gra = new FormPlansza(back);
                 this.Hide();
                 gra.ShowDialog();
                 this.Close();
@@ -66,8 +62,10 @@ namespace ZTP___Statki
 
         private Point TabelaPozycja()
         {
-            return new Point(tablePlanszaRozstawianie.ClientSize.Width / 2,
-                tablePlanszaRozstawianie.ClientSize.Height / 2);
+            return new Point(
+                (this.ClientSize.Width - tablePlanszaRozstawianie.Width) / 2,
+                (this.ClientSize.Height - tablePlanszaRozstawianie.Height) / 2
+            );
         }
 
         private void FormRozstawianie_Resize(object sender, EventArgs e)
