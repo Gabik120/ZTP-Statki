@@ -4,15 +4,8 @@ namespace ZTP___Statki
 {
     partial class FormPlansza
     {
-        /// <summary>
-        /// Wymagana zmienna projektanta.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Wyczyść wszystkie używane zasoby.
-        /// </summary>
-        /// <param name="disposing">prawda, jeżeli zarządzane zasoby powinny zostać zlikwidowane; Fałsz w przeciwnym wypadku.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -24,54 +17,78 @@ namespace ZTP___Statki
 
         #region Kod generowany przez Projektanta formularzy systemu Windows
 
-        /// <summary>
-        /// Metoda wymagana do obsługi projektanta — nie należy modyfikować
-        /// jej zawartości w edytorze kodu.
-        /// </summary>
         private void InitializeComponent()
         {
             this.tablePlanszaGracza = new System.Windows.Forms.TableLayoutPanel();
-            this.btn_start = new System.Windows.Forms.Button();
+            this.tablePlanszaKomputera = new System.Windows.Forms.TableLayoutPanel();
+            this.lblGracz = new System.Windows.Forms.Label();
+            this.lblKomputer = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // tablePlanszaGracza
             // 
             this.tablePlanszaGracza.ColumnCount = 1;
-            this.tablePlanszaGracza.Location = new System.Drawing.Point(200, 150);
+            this.tablePlanszaGracza.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tablePlanszaGracza.Location = new System.Drawing.Point(50, 100);
             this.tablePlanszaGracza.Name = "tablePlanszaGracza";
             this.tablePlanszaGracza.RowCount = 1;
-            this.tablePlanszaGracza.Size = new System.Drawing.Size(250, 250);
+            this.tablePlanszaGracza.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tablePlanszaGracza.Size = new System.Drawing.Size(400, 400);
             this.tablePlanszaGracza.TabIndex = 0;
             // 
-            // btn_start
+            // tablePlanszaKomputera
             // 
-            this.btn_start.Location = new System.Drawing.Point(61, 74);
-            this.btn_start.Name = "btn_start";
-            this.btn_start.Size = new System.Drawing.Size(75, 23);
-            this.btn_start.TabIndex = 1;
-            this.btn_start.Text = "START";
-            this.btn_start.UseVisualStyleBackColor = true;
-            this.btn_start.Click += new System.EventHandler(this.btn_start_Click);
+            this.tablePlanszaKomputera.ColumnCount = 1;
+            this.tablePlanszaKomputera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tablePlanszaKomputera.Location = new System.Drawing.Point(500, 100);
+            this.tablePlanszaKomputera.Name = "tablePlanszaKomputera";
+            this.tablePlanszaKomputera.RowCount = 1;
+            this.tablePlanszaKomputera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tablePlanszaKomputera.Size = new System.Drawing.Size(400, 400);
+            this.tablePlanszaKomputera.TabIndex = 1;
+            // 
+            // lblGracz
+            // 
+            this.lblGracz.AutoSize = true;
+            this.lblGracz.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.lblGracz.Location = new System.Drawing.Point(50, 60);
+            this.lblGracz.Name = "lblGracz";
+            this.lblGracz.Size = new System.Drawing.Size(124, 25);
+            this.lblGracz.TabIndex = 2;
+            this.lblGracz.Text = "Twoja Flota";
+            // 
+            // lblKomputer
+            // 
+            this.lblKomputer.AutoSize = true;
+            this.lblKomputer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.lblKomputer.Location = new System.Drawing.Point(500, 60);
+            this.lblKomputer.Name = "lblKomputer";
+            this.lblKomputer.Size = new System.Drawing.Size(164, 25);
+            this.lblKomputer.TabIndex = 3;
+            this.lblKomputer.Text = "Flota Wroga (?)\r\n";
             // 
             // FormPlansza
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.ClientSize = new System.Drawing.Size(982, 553);
-            this.Controls.Add(this.btn_start);
+            this.ClientSize = new System.Drawing.Size(982, 600);
+            this.Controls.Add(this.lblKomputer);
+            this.Controls.Add(this.lblGracz);
+            this.Controls.Add(this.tablePlanszaKomputera);
             this.Controls.Add(this.tablePlanszaGracza);
             this.Name = "FormPlansza";
-            this.Text = "BattleShips";
+            this.Text = "BattleShips - Bitwa";
             this.Resize += new System.EventHandler(this.FormPlansza_Resize);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.TableLayoutPanel tablePlanszaGracza;
-        private Button btn_start;
+        private System.Windows.Forms.TableLayoutPanel tablePlanszaKomputera;
+        private Label lblGracz;
+        private Label lblKomputer;
     }
 }
-
