@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ZTP___Statki
 {
-    public partial class FormRozstawianie: Form
+    public partial class FormRozstawianie : Form
     {
         public FormRozstawianie()
         {
@@ -26,8 +21,10 @@ namespace ZTP___Statki
             bok = bok - (bok % wymiar);
             table.Size = new Size(bok, bok);
         }
+
         private void FormRozstawianie_Load(object sender, EventArgs e)
         {
+            // Budowanie planszy wizualnej
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
             director.Construct();
@@ -43,6 +40,7 @@ namespace ZTP___Statki
             ResizeTable(tablePlanszaRozstawianie);
             tablePlanszaRozstawianie.Location = TabelaPozycja();
 
+            // Logika planszy
             PlanszaLogiczna back = new PlanszaLogiczna();
 
             List<Statek> flota = new List<Statek>
@@ -54,9 +52,12 @@ namespace ZTP___Statki
             };
 
             RozstawiaczStatkow rozstawiacz = new RozstawiaczStatkow(back, tablePlanszaRozstawianie, flota);
+
+            // --- ZMIANA TUTAJ ---
+            // Przekazujemy wypełnioną planszę 'back' do gry
             rozstawiacz.RozmieszczanieZakonczone += (s, args) =>
             {
-                FormPlansza gra = new FormPlansza();
+                FormPlansza gra = new FormPlansza(back); // Przekazanie planszy
                 this.Hide();
                 gra.ShowDialog();
                 this.Close();
@@ -68,6 +69,7 @@ namespace ZTP___Statki
             return new Point(tablePlanszaRozstawianie.ClientSize.Width / 2,
                 tablePlanszaRozstawianie.ClientSize.Height / 2);
         }
+
         private void FormRozstawianie_Resize(object sender, EventArgs e)
         {
             ResizeTable(tablePlanszaRozstawianie);
