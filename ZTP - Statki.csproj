@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormReplay.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormReplay.Designer.cs">
+      <DependentUpon>FormReplay.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormPlansza.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -58,6 +64,8 @@
     <Compile Include="FormRozstawianie.Designer.cs">
       <DependentUpon>FormRozstawianie.cs</DependentUpon>
     </Compile>
+    <Compile Include="HistoriaGry.cs" />
+    <Compile Include="Komendy.cs" />
     <Compile Include="KomputerGracz.cs" />
     <Compile Include="PlanszaBuilder.cs" />
     <Compile Include="PlanszaLogiczna.cs" />
