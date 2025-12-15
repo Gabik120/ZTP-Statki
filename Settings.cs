@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 namespace ZTP___Statki
 {
 
-    public enum Difficulty {Latwy,Sredni,Trudny }
+    public enum Difficulty {Amator,Paczatkujacy,Sredni,Sredniozaawansowany,Zaawansowany,Ekspert}
     class Settings
     {
         private static Settings instance = null;
         public int wymiar { get; set; } = 10;
-        public Difficulty trudnosc = Difficulty.Latwy;
+        public Difficulty trudnosc = Difficulty.Zaawansowany;
         private Settings()
         {
         }
