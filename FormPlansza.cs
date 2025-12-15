@@ -24,6 +24,21 @@ namespace ZTP___Statki
         public FormPlansza(PlanszaLogiczna planszaGracza) : this()
         {
             _planszaGracza = planszaGracza;
+            IStrategiaStrzelania strategia;
+
+            switch (Settings.Instance.trudnosc)
+            {
+                case Difficulty.Sredni:
+                    strategia = new StrategiaSrednia();
+                    break;
+                case Difficulty.Zaawansowany:
+                    strategia = new StrategiaTrudna();
+                    break;
+                case Difficulty.Amator:
+                default:
+                    strategia = new StrategiaLosowa();
+                    break;
+            }
 
             GraFasada fasada = new GraFasada();
 
@@ -56,34 +71,36 @@ namespace ZTP___Statki
         {
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
+
+            
             director.Construct();
             TableLayoutPanel tempTable = builder.GetProduct();
 
             KopiujStruktureTabeli(tempTable, tabela);
+                    dane.Statek = plansza.Siatka[x, y];
 
             foreach (Control c in tabela.Controls)
             {
                 if (c is PictureBox box && c.Tag is DanePola dane)
                 {
-                    int x = dane.Wspolrzedne.X;
-                    int y = dane.Wspolrzedne.Y;
-
-                    dane.Statek = plansza.Siatka[x, y];
-
-                    if (!czyInteraktywna)
-                    {
-                        if (plansza.Siatka[x, y] != null)
-                        {
                             box.BackColor = Settings.Instance.KolorStatku;
                         }
                         else
                         {
                             box.BackColor = Settings.Instance.KolorWody;
+                    int y = dane.Wspolrzedne.Y;
+
+                    // Jeśli to plansza gracza, pokaż statki od razu
+                    if (!czyInteraktywna)
+                        box.BackColor = Settings.Instance.KolorWody;
+                        if (plansza.Siatka[x, y] != null)
+                        {
+                            box.BackColor = Color.Gray; // Statek gracza
                         }
                     }
                     else
                     {
-                        box.BackColor = Settings.Instance.KolorWody;
+                        // To jest plansza przeciwnika - podpinamy zdarzenie kliknięcia (Strzał)
                         box.MouseClick += (s, e) => WykonajStrzalGracza(x, y, box);
                         box.Cursor = Cursors.Hand;
                     }
@@ -99,42 +116,37 @@ namespace ZTP___Statki
             cel.RowStyles.Clear();
 
             cel.ColumnCount = zrodlo.ColumnCount;
-            cel.RowCount = zrodlo.RowCount;
-
-            for (int i = 0; i < zrodlo.ColumnStyles.Count; i++)
-                cel.ColumnStyles.Add(new ColumnStyle(zrodlo.ColumnStyles[i].SizeType, zrodlo.ColumnStyles[i].Width));
-
-            for (int i = 0; i < zrodlo.RowStyles.Count; i++)
                 cel.RowStyles.Add(new RowStyle(zrodlo.RowStyles[i].SizeType, zrodlo.RowStyles[i].Height));
 
-            var controls = new List<Control>();
+            // Przenoszenie kontrolek (musimy tworzyć nowe instancje PictureBox, bo kontrolka ma jednego rodzica)
+            // Uproszczenie: Używamy logiki buildera wprost na docelowym obiekcie w prawdziwym refactoringu,
+            // ale tutaj zrobimy "przepinanie" ręczne dla spójności.
+
+            // Ponieważ builder już stworzył PictureBoxy z odpowiednimi Tagami, możemy je "ukraść" do naszej tabeli
+                cel.Controls.Add(c); 
+                
             foreach (Control c in zrodlo.Controls) controls.Add(c);
 
             foreach (var c in controls)
             {
                 var pos = zrodlo.GetPositionFromControl(c);
                 zrodlo.Controls.Remove(c);
-
+                    var pos = zrodlo.GetPositionFromControl(c);
                 if (c.Tag is DanePola dp)
                 {
                     cel.Controls.Add(c, dp.Wspolrzedne.Y + 1, dp.Wspolrzedne.X + 1);
                 }
                 else
-                {
+
+                    var pos = zrodlo.GetPositionFromControl(c);
                     cel.Controls.Add(c, pos.Column, pos.Row);
                 }
             }
         }
 
+        // --- GAME LOOP ---
+
         private void WykonajStrzalGracza(int x, int y, PictureBox pole)
-        {
-            if (!_turaGracza) return;
-            if (_komputer.Plansza.CzyPoleOdkryte(x, y)) return;
-
-            WynikStrzalu wynik = _komputer.Plansza.Strzal(x, y);
-
-            ZaktualizujWygladPola(pole, wynik);
-
             if (_odtwarzaczMuzyki != null)
             {
                 if (wynik == WynikStrzalu.Trafienie)
@@ -152,6 +164,14 @@ namespace ZTP___Statki
                 }
             }
 
+            if (!_turaGracza) return;
+            if (_komputer.Plansza.CzyPoleOdkryte(x, y)) return;
+
+            WynikStrzalu wynik = _komputer.Plansza.Strzal(x, y);
+
+            ZaktualizujWygladPola(pole, wynik);
+
+            // 3. Sprawdzenie zwycięstwa
             if (_komputer.Plansza.CzyWszystkieStatkiZatopione())
             {
                 if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
@@ -161,21 +181,21 @@ namespace ZTP___Statki
             }
 
             if (wynik == WynikStrzalu.Pudlo)
-            {
-                _turaGracza = false;
-                RuchKomputera();
-            }
-        }
-
-        private void RuchKomputera()
-        {
             Application.DoEvents();
 
+                RuchKomputera();
+            }
+                System.Threading.Thread.Sleep(500);
+        private void RuchKomputera()
+        {
             while (!_turaGracza)
             {
-                System.Threading.Thread.Sleep(500);
+                Application.DoEvents();
+                System.Threading.Thread.Sleep(500); // Symulacja myślenia
 
                 Point cel = _komputer.WykonajRuch(_planszaGracza);
+
+                // 2. Strzał w planszę gracza
                 WynikStrzalu wynik = _planszaGracza.Strzal(cel.X, cel.Y);
 
                 PictureBox poleGracza = ZnajdzPole(tablePlanszaGracza, cel.X, cel.Y);
@@ -193,26 +213,26 @@ namespace ZTP___Statki
                     return;
                 }
 
-                if (wynik == WynikStrzalu.Pudlo)
-                {
+                    box.BackColor = Settings.Instance.KolorPudlo;
                     _turaGracza = true;
                 }
-            }
+                    box.BackColor = Settings.Instance.KolorTrafiony;
         }
 
-        private void ZaktualizujWygladPola(PictureBox box, WynikStrzalu wynik)
-        {
+                    TableLayoutPanel tabela = (TableLayoutPanel)box.Parent;
+                    PomalujZatopionyStatek(tabela, box);
             switch (wynik)
             {
                 case WynikStrzalu.Pudlo:
-                    box.BackColor = Settings.Instance.KolorPudlo;
+                    box.BackColor = Color.LightBlue; // Ślad po kuli w wodzie
+                    // Można dodać obrazek kropki
                     break;
                 case WynikStrzalu.Trafienie:
-                    box.BackColor = Settings.Instance.KolorTrafiony;
+                    box.BackColor = Color.OrangeRed; // Ogień
                     break;
                 case WynikStrzalu.Zatopienie:
-                    TableLayoutPanel tabela = (TableLayoutPanel)box.Parent;
-                    PomalujZatopionyStatek(tabela, box);
+                    box.BackColor = Color.DarkRed; // Zniszczony
+                    // Opcjonalnie: można tutaj znaleźć cały statek i pomalować go na czarno
                     break;
             }
         }
@@ -227,18 +247,6 @@ namespace ZTP___Statki
             foreach (Control c in tabela.Controls)
             {
                 if (c is PictureBox pole && c.Tag is DanePola dane)
-                {
-                    if (dane.Statek == zatopionyStatek)
-                    {
-                        pole.BackColor = Settings.Instance.KolorZatopiony;
-                        pole.BorderStyle = BorderStyle.Fixed3D;
-                    }
-                }
-            }
-        }
-
-        private PictureBox ZnajdzPole(TableLayoutPanel tabela, int x, int y)
-        {
             foreach (Control c in tabela.Controls)
             {
                 if (c is PictureBox box && c.Tag is DanePola dane)
@@ -248,6 +256,18 @@ namespace ZTP___Statki
                 }
             }
             return null;
+        }
+                        pole.BackColor = Settings.Instance.KolorZatopiony;
+                        pole.BorderStyle = BorderStyle.Fixed3D;
+                    }
+                }
+            }
+        }
+
+        private PictureBox ZnajdzPole(TableLayoutPanel tabela, int x, int y)
+        {
+            // y+1 i x+1 ponieważ wiersz/kolumna 0 to etykiety
+            return tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
         }
 
         private void FormPlansza_Resize(object sender, EventArgs e)
@@ -261,6 +281,7 @@ namespace ZTP___Statki
         {
             if (table == null || table.Parent == null) return;
             int wymiar = Settings.Instance.wymiar;
+            if (tablePlanszaGracza == null || tablePlanszaKomputera == null) return;
 
             int dostepnaSzerokosc = (this.ClientSize.Width / 2) - 40;
             int dostepnaWysokosc = this.ClientSize.Height - 100;
@@ -273,8 +294,7 @@ namespace ZTP___Statki
 
         private void PozycjonujElementy()
         {
-            if (tablePlanszaGracza == null || tablePlanszaKomputera == null) return;
-
+            // Wyśrodkowanie w pionie, równomiernie w poziomie
             int srodekY = (this.ClientSize.Height - tablePlanszaGracza.Height) / 2 + 20;
             int margines = 50;
 

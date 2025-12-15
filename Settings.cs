@@ -10,6 +10,7 @@ namespace ZTP___Statki
 {
     public enum Difficulty { Latwy, Sredni, Trudny }
 
+    public enum Difficulty {Amator,Paczatkujacy,Sredni,Sredniozaawansowany,Zaawansowany,Ekspert}
     class Settings
     {
         private static Settings instance = null;
@@ -27,6 +28,10 @@ namespace ZTP___Statki
 
         private Settings() { }
 
+        public Difficulty trudnosc = Difficulty.Zaawansowany;
+        private Settings()
+        {
+        }
         public static Settings Instance
         {
             get
