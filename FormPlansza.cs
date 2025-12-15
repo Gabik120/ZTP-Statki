@@ -45,8 +45,12 @@ namespace ZTP___Statki
             List<Statek> flotaKomputera = fasada.UtworzStandardowaFlote();
             _komputer.LosujUstawienieStatkow(flotaKomputera);
 
+            // Zapisz stan dla Replay
+            HistoriaGry.Instance.ZapiszRozstawienie(null, _komputer.Plansza.PobierzUstawienieStatkow());
+
             BudujWidokPlanszy(_planszaGracza, tablePlanszaGracza, false);
             BudujWidokPlanszy(_komputer.Plansza, tablePlanszaKomputera, true);
+        }
 
             this.StartPosition = FormStartPosition.CenterScreen;
             this.ClientSize = new Size(1200, 900);
@@ -61,11 +65,22 @@ namespace ZTP___Statki
             }
             catch { }
         }
+        private List<Statek> GenerujFlote()
+        {
+            return new List<Statek>
+            {
+                new FabrykaPancernikow().StworzStatek(),
+                new FabrykaKrazownikow().StworzStatek(),
+                new FabrykaNiszczycieli().StworzStatek(),
+                new FabrykaNiszczycieli().StworzStatek()
+            };
+        }
 
         private void BudujWidokPlanszy(PlanszaLogiczna plansza, TableLayoutPanel tabela, bool czyInteraktywna)
         {
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
+
             director.Construct();
             TableLayoutPanel tempTable = builder.GetProduct();
 
@@ -120,10 +135,12 @@ namespace ZTP___Statki
             {
                 var pos = zrodlo.GetPositionFromControl(c);
                 zrodlo.Controls.Remove(c);
-
+                cel.Controls.Add(c);
                 if (c.Tag is DanePola dp)
                     cel.Controls.Add(c, dp.Wspolrzedne.Y + 1, dp.Wspolrzedne.X + 1);
                 else
+                {
+                    var pos = zrodlo.GetPositionFromControl(c);
                     cel.Controls.Add(c, pos.Column, pos.Row);
             }
         }
@@ -133,8 +150,12 @@ namespace ZTP___Statki
             if (!_turaGracza) return;
             if (_komputer.Plansza.CzyPoleOdkryte(x, y)) return;
 
+            KomendaStrzalu strzal = new KomendaStrzalu(_komputer.Plansza, x, y, false);
+            strzal.Wykonaj();
+            HistoriaGry.Instance.DodajRuch(strzal);
             WynikStrzalu wynik = _komputer.Plansza.Strzal(x, y);
 
+            WynikStrzalu wynik = strzal.Wynik;
             ZaktualizujWygladPola(pole, wynik);
 
             if (_odtwarzaczMuzyki != null)
@@ -159,6 +180,8 @@ namespace ZTP___Statki
                 if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
                 MessageBox.Show("Zwycięstwo!", "Koniec", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Close();
+                HistoriaGry.Instance.Zwyciezca = "Gracz";
+                KoniecGry("Zwycięstwo!");
                 return;
             }
 
@@ -178,7 +201,12 @@ namespace ZTP___Statki
                 Thread.Sleep(500);
 
                 Point cel = _komputer.WykonajRuch(_planszaGracza);
-                WynikStrzalu wynik = _planszaGracza.Strzal(cel.X, cel.Y);
+
+                KomendaStrzalu strzal = new KomendaStrzalu(_planszaGracza, cel.X, cel.Y, true);
+                strzal.Wykonaj();
+                HistoriaGry.Instance.DodajRuch(strzal);
+
+                WynikStrzalu wynik = strzal.Wynik;
 
                 PictureBox poleGracza = ZnajdzPole(tablePlanszaGracza, cel.X, cel.Y);
                 if (poleGracza != null)
@@ -192,6 +220,8 @@ namespace ZTP___Statki
                     if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
                     MessageBox.Show("Przegrana! Twoja flota została zniszczona.", "Koniec gry", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     this.Close();
+                    HistoriaGry.Instance.Zwyciezca = "Komputer";
+                    KoniecGry("Przegrana!");
                     return;
                 }
 
@@ -200,6 +230,18 @@ namespace ZTP___Statki
                     _turaGracza = true;
                 }
             }
+        }
+
+        private void KoniecGry(string wiadomosc)
+        {
+            var res = MessageBox.Show($"{wiadomosc} Czy chcesz obejrzeć powtórkę?", "Koniec gry", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (res == DialogResult.Yes)
+            {
+                this.Hide();
+                FormReplay replay = new FormReplay();
+                replay.ShowDialog();
+            }
+            this.Close();
         }
 
         private void ZaktualizujWygladPola(PictureBox box, WynikStrzalu wynik)
@@ -250,6 +292,7 @@ namespace ZTP___Statki
                 }
             }
             return null;
+            return tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
         }
 
         private void FormPlansza_Resize(object sender, EventArgs e)

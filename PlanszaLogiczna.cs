@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ZTP___Statki
 {
@@ -14,6 +11,7 @@ namespace ZTP___Statki
         JuzStrzelano,
         Blad
     }
+
     public class PlanszaLogiczna
     {
         public int Rozmiar { get; private set; }
@@ -74,6 +72,16 @@ namespace ZTP___Statki
             }
         }
 
+        public void UsunStatek(int x, int y, int dlugosc, bool pionowo)
+        {
+            for (int i = 0; i < dlugosc; i++)
+            {
+                int celX = pionowo ? x : x + i;
+                int celY = pionowo ? y + i : y;
+                Siatka[celX, celY] = null;
+            }
+        }
+
         public WynikStrzalu Strzal(int x, int y)
         {
             if (x < 0 || x >= Rozmiar || y < 0 || y >= Rozmiar)
@@ -119,10 +127,32 @@ namespace ZTP___Statki
             }
             return true;
         }
+
         public bool CzyPoleOdkryte(int x, int y)
         {
             if (x < 0 || x >= Rozmiar || y < 0 || y >= Rozmiar) return true;
             return _polaOdkryte[x, y];
+        }
+
+        public List<HistoriaGry.StatekInfo> PobierzUstawienieStatkow()
+        {
+            var lista = new List<HistoriaGry.StatekInfo>();
+            var odwiedzone = new HashSet<Statek>();
+
+            for (int x = 0; x < Rozmiar; x++)
+            {
+                for (int y = 0; y < Rozmiar; y++)
+                {
+                    var s = Siatka[x, y];
+                    if (s != null && !odwiedzone.Contains(s))
+                    {
+                        odwiedzone.Add(s);
+                        bool pionowo = (y + 1 < Rozmiar && Siatka[x, y + 1] == s);
+                        lista.Add(new HistoriaGry.StatekInfo { Statek = s, X = x, Y = y, Pionowo = pionowo });
+                    }
+                }
+            }
+            return lista;
         }
     }
 }

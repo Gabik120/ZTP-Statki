@@ -1,8 +1,6 @@
-﻿using System.Windows.Forms;
-
-namespace ZTP___Statki
+﻿namespace ZTP___Statki
 {
-    partial class FormPlansza
+    partial class FormReplay
     {
         /// <summary>
         /// Required designer variable.
@@ -32,15 +30,14 @@ namespace ZTP___Statki
         {
             this.tablePlanszaGracza = new System.Windows.Forms.TableLayoutPanel();
             this.tablePlanszaKomputera = new System.Windows.Forms.TableLayoutPanel();
-            this.lblGracz = new System.Windows.Forms.Label();
-            this.lblKomputer = new System.Windows.Forms.Label();
+            this.lblInfo = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // tablePlanszaGracza
             // 
             this.tablePlanszaGracza.ColumnCount = 1;
             this.tablePlanszaGracza.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tablePlanszaGracza.Location = new System.Drawing.Point(50, 100);
+            this.tablePlanszaGracza.Location = new System.Drawing.Point(50, 80);
             this.tablePlanszaGracza.Name = "tablePlanszaGracza";
             this.tablePlanszaGracza.RowCount = 1;
             this.tablePlanszaGracza.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -51,45 +48,35 @@ namespace ZTP___Statki
             // 
             this.tablePlanszaKomputera.ColumnCount = 1;
             this.tablePlanszaKomputera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tablePlanszaKomputera.Location = new System.Drawing.Point(500, 100);
+            this.tablePlanszaKomputera.Location = new System.Drawing.Point(500, 80);
             this.tablePlanszaKomputera.Name = "tablePlanszaKomputera";
             this.tablePlanszaKomputera.RowCount = 1;
             this.tablePlanszaKomputera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tablePlanszaKomputera.Size = new System.Drawing.Size(400, 400);
             this.tablePlanszaKomputera.TabIndex = 1;
             // 
-            // lblGracz
+            // lblInfo
             // 
-            this.lblGracz.AutoSize = true;
-            this.lblGracz.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblGracz.Location = new System.Drawing.Point(50, 60);
-            this.lblGracz.Name = "lblGracz";
-            this.lblGracz.Size = new System.Drawing.Size(124, 25);
-            this.lblGracz.TabIndex = 2;
-            this.lblGracz.Text = "Twoja Flota";
+            this.lblInfo.AutoSize = true;
+            this.lblInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.lblInfo.Location = new System.Drawing.Point(350, 20);
+            this.lblInfo.Name = "lblInfo";
+            this.lblInfo.Size = new System.Drawing.Size(260, 29);
+            this.lblInfo.TabIndex = 2;
+            this.lblInfo.Text = "POWTÓRKA MECZU";
             // 
-            // lblKomputer
-            // 
-            this.lblKomputer.AutoSize = true;
-            this.lblKomputer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblKomputer.Location = new System.Drawing.Point(500, 60);
-            this.lblKomputer.Name = "lblKomputer";
-            this.lblKomputer.Size = new System.Drawing.Size(164, 25);
-            this.lblKomputer.TabIndex = 3;
-            this.lblKomputer.Text = "Flota Wroga (?)\r\n";
-            // 
-            // FormPlansza
+            // FormReplay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(982, 600);
-            this.Controls.Add(this.lblKomputer);
-            this.Controls.Add(this.lblGracz);
+            this.ClientSize = new System.Drawing.Size(982, 550);
+            this.Controls.Add(this.lblInfo);
             this.Controls.Add(this.tablePlanszaKomputera);
             this.Controls.Add(this.tablePlanszaGracza);
-            this.Name = "FormPlansza";
-            this.Text = "BattleShips - Bitwa";
-            this.Resize += new System.EventHandler(this.FormPlansza_Resize);
+            this.Name = "FormReplay";
+            this.Text = "Replay";
+            this.Load += new System.EventHandler(this.FormReplay_Load);
+            this.Resize += new System.EventHandler(this.FormReplay_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -99,7 +86,6 @@ namespace ZTP___Statki
 
         private System.Windows.Forms.TableLayoutPanel tablePlanszaGracza;
         private System.Windows.Forms.TableLayoutPanel tablePlanszaKomputera;
-        private System.Windows.Forms.Label lblGracz;
-        private System.Windows.Forms.Label lblKomputer;
+        private System.Windows.Forms.Label lblInfo;
     }
 }

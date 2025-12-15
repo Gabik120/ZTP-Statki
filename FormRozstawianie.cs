@@ -7,12 +7,26 @@ namespace ZTP___Statki
 {
     public partial class FormRozstawianie : Form
     {
+        private RozstawiaczStatkow _rozstawiacz;
+        private Button _btnCofnij;
+
         public FormRozstawianie()
         {
             InitializeComponent();
 
             this.StartPosition = FormStartPosition.CenterScreen;
             this.ClientSize = new Size(1200, 900);
+            DodajPrzyciskCofnij();
+        }
+
+        private void DodajPrzyciskCofnij()
+        {
+            _btnCofnij = new Button();
+            _btnCofnij.Text = "Cofnij";
+            _btnCofnij.Size = new Size(100, 40);
+            _btnCofnij.Location = new Point(50, 50);
+            _btnCofnij.Click += (s, e) => _rozstawiacz?.CofnijOstatni();
+            this.Controls.Add(_btnCofnij);
         }
 
         private void ResizeTable(TableLayoutPanel table)
@@ -30,6 +44,8 @@ namespace ZTP___Statki
 
         private void FormRozstawianie_Load(object sender, EventArgs e)
         {
+            HistoriaGry.Instance.Wyczysc();
+
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
             director.Construct();
@@ -49,10 +65,23 @@ namespace ZTP___Statki
             PlanszaLogiczna back = fasada.UtworzPustaPlansze();
             List<Statek> flota = fasada.UtworzStandardowaFlote();
 
-            RozstawiaczStatkow rozstawiacz = new RozstawiaczStatkow(back, tablePlanszaRozstawianie, flota);
-
-            rozstawiacz.RozmieszczanieZakonczone += (s, args) =>
+            List<Statek> flota = new List<Statek>
             {
+                new FabrykaPancernikow().StworzStatek(),
+                new FabrykaKrazownikow().StworzStatek(),
+                new FabrykaNiszczycieli().StworzStatek(),
+                new FabrykaNiszczycieli().StworzStatek()
+            };
+
+            _rozstawiacz = new RozstawiaczStatkow(back, tablePlanszaRozstawianie, flota);
+
+            _rozstawiacz.RozmieszczanieZakonczone += (s, args) =>
+            {
+                // Zapisz stan początkowy dla Replaya (Gracz)
+                var ukladGracza = back.PobierzUstawienieStatkow();
+                // Dla komputera zapiszemy w FormPlansza, bo tam jest generowany
+                HistoriaGry.Instance.ZapiszRozstawienie(ukladGracza, null);
+
                 FormPlansza gra = new FormPlansza(back);
                 this.Hide();
                 gra.ShowDialog();
