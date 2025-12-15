@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace ZTP___Statki
 {
     public partial class FormPlansza : Form
     {
-        // Logika
         private PlanszaLogiczna _planszaGracza;
         private KomputerGracz _komputer;
+        private System.Media.SoundPlayer _odtwarzaczMuzyki;
 
-        // Kontrola tury
+        private bool _czyMuzykaGra = false;
+
         private bool _turaGracza = true;
 
-        // Konstruktor domyślny (wymagany przez designer, ale nieużywany w logice gry)
         public FormPlansza()
         {
             InitializeComponent();
@@ -34,10 +35,21 @@ namespace ZTP___Statki
 
             BudujWidokPlanszy(_planszaGracza, tablePlanszaGracza, false);
             BudujWidokPlanszy(_komputer.Plansza, tablePlanszaKomputera, true);
+
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.ClientSize = new Size(1200, 900); 
+            this.ClientSize = new Size(1200, 900);
 
             FormPlansza_Resize(this, EventArgs.Empty);
+
+            try
+            {
+                string sciezka = System.IO.Path.Combine(Application.StartupPath, "muzyka.wav");
+                _odtwarzaczMuzyki = new System.Media.SoundPlayer(sciezka);
+                _odtwarzaczMuzyki.Load();
+            }
+            catch
+            {
+            }
         }
 
         private void BudujWidokPlanszy(PlanszaLogiczna plansza, TableLayoutPanel tabela, bool czyInteraktywna)
@@ -77,7 +89,6 @@ namespace ZTP___Statki
                     }
                 }
             }
-
             SkalujTabele(tabela);
         }
 
@@ -101,20 +112,19 @@ namespace ZTP___Statki
 
             foreach (var c in controls)
             {
+                var pos = zrodlo.GetPositionFromControl(c);
                 zrodlo.Controls.Remove(c);
-                cel.Controls.Add(c); 
+
                 if (c.Tag is DanePola dp)
                 {
                     cel.Controls.Add(c, dp.Wspolrzedne.Y + 1, dp.Wspolrzedne.X + 1);
                 }
                 else
                 {
-                    var pos = zrodlo.GetPositionFromControl(c);
                     cel.Controls.Add(c, pos.Column, pos.Row);
                 }
             }
         }
-
 
         private void WykonajStrzalGracza(int x, int y, PictureBox pole)
         {
@@ -125,9 +135,27 @@ namespace ZTP___Statki
 
             ZaktualizujWygladPola(pole, wynik);
 
+            if (_odtwarzaczMuzyki != null)
+            {
+                if (wynik == WynikStrzalu.Trafienie)
+                {
+                    if (!_czyMuzykaGra)
+                    {
+                        try { _odtwarzaczMuzyki.PlayLooping(); } catch { }
+                        _czyMuzykaGra = true;
+                    }
+                }
+                else if (wynik == WynikStrzalu.Zatopienie)
+                {
+                    try { _odtwarzaczMuzyki.Stop(); } catch { }
+                    _czyMuzykaGra = false;
+                }
+            }
+
             if (_komputer.Plansza.CzyWszystkieStatkiZatopione())
             {
-                MessageBox.Show("Zwycięstwo! Wszystkie wrogie statki zatopione!", "Koniec gry", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
+                MessageBox.Show("Zwycięstwo!", "Koniec", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Close();
                 return;
             }
@@ -139,25 +167,27 @@ namespace ZTP___Statki
             }
         }
 
-        private async void RuchKomputera()
+        private void RuchKomputera()
         {
+            Application.DoEvents();
+
             while (!_turaGracza)
             {
-                Application.DoEvents();
-                System.Threading.Thread.Sleep(500); 
+                System.Threading.Thread.Sleep(500);
 
                 Point cel = _komputer.WykonajRuch(_planszaGracza);
-
                 WynikStrzalu wynik = _planszaGracza.Strzal(cel.X, cel.Y);
 
                 PictureBox poleGracza = ZnajdzPole(tablePlanszaGracza, cel.X, cel.Y);
                 if (poleGracza != null)
                 {
                     ZaktualizujWygladPola(poleGracza, wynik);
+                    poleGracza.Refresh();
                 }
 
                 if (_planszaGracza.CzyWszystkieStatkiZatopione())
                 {
+                    if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
                     MessageBox.Show("Przegrana! Twoja flota została zniszczona.", "Koniec gry", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     this.Close();
                     return;
@@ -201,7 +231,7 @@ namespace ZTP___Statki
                     if (dane.Statek == zatopionyStatek)
                     {
                         pole.BackColor = Settings.Instance.KolorZatopiony;
-                        pole.BorderStyle = BorderStyle.Fixed3D; 
+                        pole.BorderStyle = BorderStyle.Fixed3D;
                     }
                 }
             }
@@ -209,9 +239,16 @@ namespace ZTP___Statki
 
         private PictureBox ZnajdzPole(TableLayoutPanel tabela, int x, int y)
         {
-            return tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
+            foreach (Control c in tabela.Controls)
+            {
+                if (c is PictureBox box && c.Tag is DanePola dane)
+                {
+                    if (dane.Wspolrzedne.X == x && dane.Wspolrzedne.Y == y)
+                        return box;
+                }
+            }
+            return null;
         }
-
 
         private void FormPlansza_Resize(object sender, EventArgs e)
         {
@@ -229,22 +266,23 @@ namespace ZTP___Statki
             int dostepnaWysokosc = this.ClientSize.Height - 100;
 
             int bok = Math.Min(dostepnaSzerokosc, dostepnaWysokosc);
-            bok = bok - (bok % wymiar); 
+            bok = bok - (bok % wymiar);
 
             table.Size = new Size(bok, bok);
         }
 
         private void PozycjonujElementy()
         {
-            int srodekY = (this.ClientSize.Height - tablePlanszaGracza.Height) / 2 + 20;
+            if (tablePlanszaGracza == null || tablePlanszaKomputera == null) return;
 
+            int srodekY = (this.ClientSize.Height - tablePlanszaGracza.Height) / 2 + 20;
             int margines = 50;
 
             tablePlanszaGracza.Location = new Point(margines, srodekY);
-            lblGracz.Location = new Point(margines, srodekY - 30);
+            if (lblGracz != null) lblGracz.Location = new Point(margines, srodekY - 30);
 
             tablePlanszaKomputera.Location = new Point(this.ClientSize.Width - tablePlanszaKomputera.Width - margines, srodekY);
-            lblKomputer.Location = new Point(this.ClientSize.Width - tablePlanszaKomputera.Width - margines, srodekY - 30);
+            if (lblKomputer != null) lblKomputer.Location = new Point(this.ClientSize.Width - tablePlanszaKomputera.Width - margines, srodekY - 30);
         }
     }
 }
