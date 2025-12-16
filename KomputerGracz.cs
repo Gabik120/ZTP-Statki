@@ -7,23 +7,23 @@ namespace ZTP___Statki
     public class KomputerGracz
     {
         public PlanszaLogiczna Plansza { get; private set; }
-        private IStrategiaStrzelania _strategia;
+        private IStrategiaStrzelania strategia;
         private Random _random = new Random();
 
         public KomputerGracz(IStrategiaStrzelania strategia)
         {
             Plansza = new PlanszaLogiczna();
-            _strategia = strategia;
+            this.strategia = strategia;
         }
 
         public void UstawStrategie(IStrategiaStrzelania nowaStrategia)
         {
-            _strategia = nowaStrategia;
+            strategia = nowaStrategia;
         }
 
         public Point WykonajRuch(PlanszaLogiczna planszaPrzeciwnika)
         {
-            return _strategia.WybierzCel(planszaPrzeciwnika);
+            return strategia.WybierzCel(planszaPrzeciwnika);
         }
 
         public void LosujUstawienieStatkow(List<Statek> flota)

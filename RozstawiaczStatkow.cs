@@ -11,10 +11,10 @@ namespace ZTP___Statki
     {
         private readonly PlanszaLogiczna back;
         private readonly TableLayoutPanel front;
-        private List<Statek> _listaStatkow;
-        private Statek _aktualnyStatek;
-        private bool _pionowo = false;
-        private Stack<KomendaPostawienia> _historiaKomend = new Stack<KomendaPostawienia>();
+        private List<Statek> listaStatkow;
+        private Statek aktualnyStatek;
+        private bool pionowo = false;
+        private Stack<KomendaPostawienia> historiaKomend = new Stack<KomendaPostawienia>();
 
         public event EventHandler RozmieszczanieZakonczone;
 
@@ -22,7 +22,7 @@ namespace ZTP___Statki
         {
             back = b;
             front = f;
-            _listaStatkow = new List<Statek>(flota);
+            listaStatkow = new List<Statek>(flota);
 
             PobierzNastepnyStatek();
             ObserwujMysz();
@@ -30,14 +30,14 @@ namespace ZTP___Statki
 
         private void PobierzNastepnyStatek()
         {
-            if (_listaStatkow.Count > 0)
+            if (listaStatkow.Count > 0)
             {
-                _aktualnyStatek = _listaStatkow[0];
-                _listaStatkow.RemoveAt(0);
+                aktualnyStatek = listaStatkow[0];
+                listaStatkow.RemoveAt(0);
             }
             else
             {
-                _aktualnyStatek = null;
+                aktualnyStatek = null;
                 OdlaczMysz();
                 RozmieszczanieZakonczone?.Invoke(this, EventArgs.Empty);
             }
@@ -45,44 +45,27 @@ namespace ZTP___Statki
 
         public void CofnijOstatni()
         {
-            if (_historiaKomend.Count == 0) return;
+            if (historiaKomend.Count == 0) return;
 
-            KomendaPostawienia ostatnia = _historiaKomend.Pop();
+            KomendaPostawienia ostatnia = historiaKomend.Pop();
 
             ostatnia.Cofnij();
             OdswiezWidokPoCofnieciu(ostatnia);
 
-            if (_aktualnyStatek != null)
+            if (aktualnyStatek != null)
             {
-                _listaStatkow.Insert(0, _aktualnyStatek);
+                listaStatkow.Insert(0, aktualnyStatek);
             }
-            _aktualnyStatek = ostatnia.Statek;
+            aktualnyStatek = ostatnia.Statek;
         }
 
         private void OdswiezWidokPoCofnieciu(KomendaPostawienia cmd)
         {
-            // Ręczne czyszczenie kolorów tam gdzie był statek
-            // Wykorzystujemy logikę Maluj z trybem Woda
-            // Musimy tymczasowo udawać, że ten statek jest aktualny i ustawiony w dobrej pozycji
-            Statek temp = _aktualnyStatek;
-            bool tempPion = _pionowo;
+            Statek temp = aktualnyStatek;
+            bool tempPion = pionowo;
 
-            _aktualnyStatek = cmd.Statek;
-            _pionowo = false; // Hack: Komenda nie przechowuje wprost property Pionowo publicznie w najprostszej wersji, ale tu wiemy z kontekstu
-                              // Aby uniknac komplikacji w Maluj, zrobimy prosciej:
-
-            // Iteracja po polach usunietego statku i reset koloru
-            // Uwaga: cmd trzyma pole prywatne, ale w metodzie Maluj uzywamy _aktualnyStatek.
-            // W KomendaPostawienia mamy metody, ale nie mamy dostepu do pol. 
-            // W produkcji nalezaloby dodac gettery do Komendy. Tutaj dodalem getter Statek.
-
-            // Skoro usunelismy z logiki, to Maluj z 'przywracanie=true' powinno zalatwic sprawe,
-            // o ile 'Wspolrzedne' sa znane. 
-            // Najprosciej: wyczyscic cala plansze i przerysowac postawione (malo wydajne)
-            // Lub wyczyscic konkretne pola.
-
-            // Ponieważ nie udostępniłem X,Y w KomendaPostawienia publicznie (są private), 
-            // najlepiej dodać proste czyszczenie wszystkich PictureBoxów i ponowne namalowanie Wody tam gdzie null.
+            aktualnyStatek = cmd.Statek;
+            pionowo = false; 
 
             foreach (Control c in front.Controls)
             {
@@ -95,8 +78,8 @@ namespace ZTP___Statki
                 }
             }
 
-            _aktualnyStatek = temp;
-            _pionowo = tempPion;
+            aktualnyStatek = temp;
+            pionowo = tempPion;
         }
 
         private void ObserwujMysz()
@@ -127,11 +110,11 @@ namespace ZTP___Statki
 
         private void OnMouseEnter(object sender, EventArgs e)
         {
-            if (_aktualnyStatek == null) return;
+            if (aktualnyStatek == null) return;
             PictureBox p = (PictureBox)sender;
             DanePola dane = (DanePola)p.Tag;
 
-            bool mozna = back.CzyMoznaPostawic(_aktualnyStatek, dane.Wspolrzedne.X, dane.Wspolrzedne.Y, _pionowo);
+            bool mozna = back.CzyMoznaPostawic(aktualnyStatek, dane.Wspolrzedne.X, dane.Wspolrzedne.Y, pionowo);
             StanWizualny stan = mozna ? StanWizualny.PodgladDobry : StanWizualny.PodgladZly;
 
             Maluj(dane.Wspolrzedne, stan);
@@ -139,7 +122,7 @@ namespace ZTP___Statki
 
         private void OnMouseLeave(object sender, EventArgs e)
         {
-            if (_aktualnyStatek == null) return;
+            if (aktualnyStatek == null) return;
             PictureBox p = (PictureBox)sender;
             DanePola dane = (DanePola)p.Tag;
 
@@ -151,20 +134,20 @@ namespace ZTP___Statki
             if (e.Button == MouseButtons.Right)
             {
                 OnMouseLeave(sender, e);
-                _pionowo = !_pionowo;
+                pionowo = !pionowo;
                 OnMouseEnter(sender, e);
                 return;
             }
 
-            if (_aktualnyStatek == null) return;
+            if (aktualnyStatek == null) return;
             PictureBox p = (PictureBox)sender;
             DanePola dane = (DanePola)p.Tag;
 
-            if (back.CzyMoznaPostawic(_aktualnyStatek, dane.Wspolrzedne.X, dane.Wspolrzedne.Y, _pionowo))
+            if (back.CzyMoznaPostawic(aktualnyStatek, dane.Wspolrzedne.X, dane.Wspolrzedne.Y, pionowo))
             {
-                KomendaPostawienia komenda = new KomendaPostawienia(back, _aktualnyStatek, dane.Wspolrzedne.X, dane.Wspolrzedne.Y, _pionowo);
+                KomendaPostawienia komenda = new KomendaPostawienia(back, aktualnyStatek, dane.Wspolrzedne.X, dane.Wspolrzedne.Y, pionowo);
                 komenda.Wykonaj();
-                _historiaKomend.Push(komenda);
+                historiaKomend.Push(komenda);
 
                 Maluj(dane.Wspolrzedne, StanWizualny.Postawiony);
 
@@ -174,12 +157,12 @@ namespace ZTP___Statki
 
         private void Maluj(Point start, StanWizualny stan, bool przywracanie = false)
         {
-            if (_aktualnyStatek == null) return;
+            if (aktualnyStatek == null) return;
 
-            for (int i = 0; i < _aktualnyStatek.Dlugosc; i++)
+            for (int i = 0; i < aktualnyStatek.Dlugosc; i++)
             {
-                int x = _pionowo ? start.X : start.X + i;
-                int y = _pionowo ? start.Y + i : start.Y;
+                int x = pionowo ? start.X : start.X + i;
+                int y = pionowo ? start.Y + i : start.Y;
 
                 if (x >= back.Rozmiar || y >= back.Rozmiar) continue;
 

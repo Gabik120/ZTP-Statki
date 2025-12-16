@@ -16,14 +16,14 @@ namespace ZTP___Statki
     {
         public int Rozmiar { get; private set; }
         public Statek[,] Siatka { get; private set; }
-        private bool[,] _polaOdkryte;
+        private bool[,] polaOdkryte;
         public event Action<int, int, WynikStrzalu> ZmianaStanuPola;
 
         public PlanszaLogiczna()
         {
             Rozmiar = Settings.Instance.wymiar;
             Siatka = new Statek[Rozmiar, Rozmiar];
-            _polaOdkryte = new bool[Rozmiar, Rozmiar];
+            polaOdkryte = new bool[Rozmiar, Rozmiar];
         }
 
         public bool CzyMoznaPostawic(Statek statek, int x, int y, bool pionowo)
@@ -87,10 +87,10 @@ namespace ZTP___Statki
             if (x < 0 || x >= Rozmiar || y < 0 || y >= Rozmiar)
                 return WynikStrzalu.Blad;
 
-            if (_polaOdkryte[x, y])
+            if (polaOdkryte[x, y])
                 return WynikStrzalu.JuzStrzelano;
 
-            _polaOdkryte[x, y] = true;
+            polaOdkryte[x, y] = true;
 
             Statek trafiony = Siatka[x, y];
             WynikStrzalu wynik;
@@ -131,7 +131,7 @@ namespace ZTP___Statki
         public bool CzyPoleOdkryte(int x, int y)
         {
             if (x < 0 || x >= Rozmiar || y < 0 || y >= Rozmiar) return true;
-            return _polaOdkryte[x, y];
+            return polaOdkryte[x, y];
         }
 
         public List<HistoriaGry.StatekInfo> PobierzUstawienieStatkow()

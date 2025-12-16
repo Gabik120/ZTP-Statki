@@ -9,13 +9,13 @@ namespace ZTP___Statki
         private static HistoriaGry _instance;
         public static HistoriaGry Instance => _instance ?? (_instance = new HistoriaGry());
 
-        private List<KomendaStrzalu> _historiaRuchow;
-        private List<StatekInfo> _poczatkowyStanGracza;
-        private List<StatekInfo> _poczatkowyStanKomputera;
+        private List<KomendaStrzalu> historiaRuchow;
+        private List<StatekInfo> poczatkowyStanGracza;
+        private List<StatekInfo> poczatkowyStanKomputera;
 
-        public List<KomendaStrzalu> Ruchy => _historiaRuchow;
-        public List<StatekInfo> StanGracza => _poczatkowyStanGracza;
-        public List<StatekInfo> StanKomputera => _poczatkowyStanKomputera;
+        public List<KomendaStrzalu> Ruchy => historiaRuchow;
+        public List<StatekInfo> StanGracza => poczatkowyStanGracza;
+        public List<StatekInfo> StanKomputera => poczatkowyStanKomputera;
         public string Zwyciezca { get; set; }
 
         private HistoriaGry()
@@ -25,21 +25,21 @@ namespace ZTP___Statki
 
         public void Wyczysc()
         {
-            _historiaRuchow = new List<KomendaStrzalu>();
-            _poczatkowyStanGracza = new List<StatekInfo>();
-            _poczatkowyStanKomputera = new List<StatekInfo>();
+            historiaRuchow = new List<KomendaStrzalu>();
+            poczatkowyStanGracza = new List<StatekInfo>();
+            poczatkowyStanKomputera = new List<StatekInfo>();
             Zwyciezca = string.Empty;
         }
 
         public void ZapiszRozstawienie(List<StatekInfo> gracz, List<StatekInfo> komputer)
         {
-            if (gracz != null) _poczatkowyStanGracza = gracz;
-            if (komputer != null) _poczatkowyStanKomputera = komputer;
+            if (gracz != null) poczatkowyStanGracza = gracz;
+            if (komputer != null) poczatkowyStanKomputera = komputer;
         }
 
         public void DodajRuch(KomendaStrzalu ruch)
         {
-            _historiaRuchow.Add(ruch);
+            historiaRuchow.Add(ruch);
         }
 
         public class StatekInfo

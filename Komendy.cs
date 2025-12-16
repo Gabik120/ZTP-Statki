@@ -11,31 +11,31 @@ namespace ZTP___Statki
 
     public class KomendaPostawienia : IKomenda
     {
-        private readonly PlanszaLogiczna _plansza;
+        private readonly PlanszaLogiczna plansza;
         private readonly Statek _statek;
-        private readonly int _x;
-        private readonly int _y;
-        private readonly bool _pionowo;
+        private readonly int x;
+        private readonly int y;
+        private readonly bool pionowo;
 
         public Statek Statek => _statek;
 
         public KomendaPostawienia(PlanszaLogiczna plansza, Statek statek, int x, int y, bool pionowo)
         {
-            _plansza = plansza;
+            this.plansza = plansza;
             _statek = statek;
-            _x = x;
-            _y = y;
-            _pionowo = pionowo;
+            this.x = x;
+            this.y = y;
+            this.pionowo = pionowo;
         }
 
         public void Wykonaj()
         {
-            _plansza.WstawStatek(_statek, _x, _y, _pionowo);
+            plansza.WstawStatek(_statek, x, y, pionowo);
         }
 
         public void Cofnij()
         {
-            _plansza.UsunStatek(_x, _y, _statek.Dlugosc, _pionowo);
+            plansza.UsunStatek(x, y, _statek.Dlugosc, pionowo);
         }
     }
 
