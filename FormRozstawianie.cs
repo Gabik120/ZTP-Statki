@@ -10,6 +10,49 @@ namespace ZTP___Statki
         private RozstawiaczStatkow _rozstawiacz;
         private Button _btnCofnij;
         private ComboBox _comboPoziom;
+        private CheckBox _chkDzwiek;
+        private Label _lblPoziom;
+        private FlowLayoutPanel _pnlMenuGorny;
+
+        private void InicjalizujMenu()
+        {
+            _pnlMenuGorny = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                Padding = new Padding(20, 15, 0, 0),
+                BackColor = Color.LightGray
+            };
+
+            _btnCofnij = new Button
+            {
+                Text = "Cofnij",
+                Size = new Size(100, 30),
+                Margin = new Padding(0, 0, 40, 0)
+            };
+            _btnCofnij.Click += (s, e) => _rozstawiacz?.CofnijOstatni();
+
+            _lblPoziom = new Label
+            {
+                Text = "Poziom trudności:",
+                AutoSize = true,
+                Margin = new Padding(0, 5, 10, 0)
+            };
+
+            _comboPoziom = new ComboBox
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Width = 150,
+                DataSource = Enum.GetValues(typeof(Difficulty))
+            };
+            _comboPoziom.SelectedItem = Settings.Instance.trudnosc;
+
+            _pnlMenuGorny.Controls.Add(_btnCofnij);
+            _pnlMenuGorny.Controls.Add(_lblPoziom);
+            _pnlMenuGorny.Controls.Add(_comboPoziom);
+
+            this.Controls.Add(_pnlMenuGorny);
+        }
 
         public FormRozstawianie()
         {
@@ -17,38 +60,20 @@ namespace ZTP___Statki
             this.StartPosition = FormStartPosition.CenterScreen;
             this.ClientSize = new Size(1200, 900);
 
-            DodajPrzyciskCofnij();
-            DodajWyborPoziomu();
-        }
-
-        private void DodajPrzyciskCofnij()
-        {
-            _btnCofnij = new Button();
-            _btnCofnij.Text = "Cofnij";
-            _btnCofnij.Size = new Size(100, 40);
-            _btnCofnij.Location = new Point(50, 50);
-            _btnCofnij.Click += (s, e) => _rozstawiacz?.CofnijOstatni();
-            this.Controls.Add(_btnCofnij);
-        }
-
-        private void DodajWyborPoziomu()
-        {
-            Label lbl = new Label();
-            lbl.Text = "Poziom:";
-            lbl.Location = new Point(200, 55);
-            this.Controls.Add(lbl);
-
-            _comboPoziom = new ComboBox();
-            _comboPoziom.Location = new Point(260, 50);
-            _comboPoziom.DataSource = Enum.GetValues(typeof(Difficulty));
-            _comboPoziom.SelectedItem = Settings.Instance.trudnosc;
-            this.Controls.Add(_comboPoziom);
+            InicjalizujMenu();
         }
 
         private void ResizeTable(TableLayoutPanel table)
         {
+            if (table == null || table.Parent == null || _pnlMenuGorny == null) return;
+
             int wymiar = Settings.Instance.wymiar;
-            int bok = Math.Min(table.Parent.ClientSize.Width, table.Parent.ClientSize.Height);
+            int menuHeight = _pnlMenuGorny.Height;
+
+            int dostepnaWysokosc = this.ClientSize.Height - menuHeight - 40;
+            int dostepnaSzerokosc = this.ClientSize.Width - 40;
+
+            int bok = Math.Min(dostepnaSzerokosc, dostepnaWysokosc);
             bok = (int)(bok * 0.8);
             bok = bok - (bok % wymiar);
             table.Size = new Size(bok, bok);
@@ -82,13 +107,13 @@ namespace ZTP___Statki
 
             _rozstawiacz.RozmieszczanieZakonczone += (s, args) =>
             {
-                 if (_comboPoziom != null && _comboPoziom.SelectedItem != null)
+                if (_comboPoziom != null && _comboPoziom.SelectedItem != null)
                 {
                     Settings.Instance.trudnosc = (Difficulty)_comboPoziom.SelectedItem;
                 }
-                 var ukladGracza = back.PobierzUstawienieStatkow();
+                var ukladGracza = back.PobierzUstawienieStatkow();
 
-                 HistoriaGry.Instance.ZapiszRozstawienie(ukladGracza, null);
+                HistoriaGry.Instance.ZapiszRozstawienie(ukladGracza, null);
 
                 FormPlansza gra = new FormPlansza(back);
                 this.Hide();
@@ -99,16 +124,24 @@ namespace ZTP___Statki
 
         private Point TabelaPozycja()
         {
+            if (_pnlMenuGorny == null || tablePlanszaRozstawianie == null)
+                return new Point(0, 0);
+
+            int menuHeight = _pnlMenuGorny.Height;
+
             return new Point(
                 (this.ClientSize.Width - tablePlanszaRozstawianie.Width) / 2,
-                (this.ClientSize.Height - tablePlanszaRozstawianie.Height) / 2
+                menuHeight + (this.ClientSize.Height - menuHeight - tablePlanszaRozstawianie.Height) / 2
             );
         }
 
         private void FormRozstawianie_Resize(object sender, EventArgs e)
         {
-            ResizeTable(tablePlanszaRozstawianie);
-            tablePlanszaRozstawianie.Location = TabelaPozycja();
+            if (tablePlanszaRozstawianie != null)
+            {
+                ResizeTable(tablePlanszaRozstawianie);
+                tablePlanszaRozstawianie.Location = TabelaPozycja();
+            }
         }
     }
 }

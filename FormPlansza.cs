@@ -11,7 +11,6 @@ namespace ZTP___Statki
         private PlanszaLogiczna _planszaGracza;
         private KomputerGracz _komputer;
         private System.Media.SoundPlayer _odtwarzaczMuzyki;
-        private bool _czyMuzykaGra = false;
         private bool _turaGracza = true;
 
         public FormPlansza()
@@ -56,7 +55,7 @@ namespace ZTP___Statki
 
             try
             {
-                string sciezka = System.IO.Path.Combine(Application.StartupPath, "muzyka.wav");
+                string sciezka = System.IO.Path.Combine(Application.StartupPath, "strzał.wav");
                 _odtwarzaczMuzyki = new System.Media.SoundPlayer(sciezka);
                 _odtwarzaczMuzyki.Load();
             }
@@ -138,25 +137,14 @@ namespace ZTP___Statki
             strzal.Wykonaj();
             HistoriaGry.Instance.DodajRuch(strzal);
 
+            try
+            {
+                _odtwarzaczMuzyki?.Play();
+            }
+            catch { }
+
             WynikStrzalu wynik = strzal.Wynik;
             ZaktualizujWygladPola(pole, wynik);
-
-            if (_odtwarzaczMuzyki != null)
-            {
-                if (wynik == WynikStrzalu.Trafienie)
-                {
-                    if (!_czyMuzykaGra)
-                    {
-                        try { _odtwarzaczMuzyki.PlayLooping(); } catch { }
-                        _czyMuzykaGra = true;
-                    }
-                }
-                else if (wynik == WynikStrzalu.Zatopienie)
-                {
-                    try { _odtwarzaczMuzyki.Stop(); } catch { }
-                    _czyMuzykaGra = false;
-                }
-            }
 
             if (_komputer.Plansza.CzyWszystkieStatkiZatopione())
             {
