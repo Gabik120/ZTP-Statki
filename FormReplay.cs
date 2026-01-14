@@ -8,9 +8,12 @@ namespace ZTP___Statki
 {
     public partial class FormReplay : Form
     {
-        public FormReplay()
+        private HistoriaGry _historia; 
+
+        public FormReplay(HistoriaGry historia)
         {
             InitializeComponent();
+            _historia = historia;
         }
 
         private async void FormReplay_Load(object sender, EventArgs e)
@@ -18,8 +21,8 @@ namespace ZTP___Statki
             ZbudujPlansze(tablePlanszaGracza);
             ZbudujPlansze(tablePlanszaKomputera);
 
-            UstawStatkiWizualnie(tablePlanszaGracza, HistoriaGry.Instance.StanGracza);
-            UstawStatkiWizualnie(tablePlanszaKomputera, HistoriaGry.Instance.StanKomputera);
+            UstawStatkiWizualnie(tablePlanszaGracza, _historia.StanGracza);
+            UstawStatkiWizualnie(tablePlanszaKomputera, _historia.StanKomputera);
 
             SkalujTabele(tablePlanszaGracza);
             SkalujTabele(tablePlanszaKomputera);
@@ -45,20 +48,14 @@ namespace ZTP___Statki
             for (int i = 0; i < temp.RowStyles.Count; i++)
                 tabela.RowStyles.Add(new RowStyle(temp.RowStyles[i].SizeType, temp.RowStyles[i].Height));
 
-            List<Control> controls = new List<Control>();
-            foreach (Control c in temp.Controls) controls.Add(c);
+            List<Control> lista = new List<Control>();
+            foreach (Control c in temp.Controls) lista.Add(c);
 
-            foreach (var c in controls)
+            foreach (Control c in lista)
             {
+                var pos = temp.GetPositionFromControl(c);
                 temp.Controls.Remove(c);
-                tabela.Controls.Add(c);
-                if (c.Tag is DanePola dp)
-                    tabela.Controls.Add(c, dp.Wspolrzedne.Y + 1, dp.Wspolrzedne.X + 1);
-                else
-                {
-                    var pos = temp.GetPositionFromControl(c);
-                    tabela.Controls.Add(c, pos.Column, pos.Row);
-                }
+                tabela.Controls.Add(c, pos.Column, pos.Row);
             }
         }
 
@@ -73,14 +70,11 @@ namespace ZTP___Statki
                     int x = info.Pionowo ? info.X : info.X + i;
                     int y = info.Pionowo ? info.Y + i : info.Y;
 
-                    PictureBox box = tabela.GetControlFromPosition(y + 1, x + 1) as PictureBox;
-                    if (box != null)
+                    Control c = tabela.GetControlFromPosition(y + 1, x + 1);
+                    if (c is PictureBox pb)
                     {
-                        if (box.Tag is DanePola dane)
-                        {
-                            dane.Statek = info.Statek;
-                        }
-                        box.BackColor = Settings.Instance.KolorStatku;
+                        pb.BackColor = Settings.Instance.KolorStatku;
+                        if (pb.Tag is DanePola dp) dp.Statek = info.Statek;
                     }
                 }
             }
@@ -88,49 +82,66 @@ namespace ZTP___Statki
 
         private async Task OdtworzSekwencje()
         {
-            var ruchy = HistoriaGry.Instance.Ruchy;
-
+            var ruchy = _historia.Ruchy;
             if (ruchy == null || ruchy.Count == 0) return;
 
             foreach (var ruch in ruchy)
             {
-                await Task.Delay(180);
+                await Task.Delay(300);
 
-                TableLayoutPanel targetTable = ruch.CzyStrzalWGracza ? tablePlanszaGracza : tablePlanszaKomputera;
-                PictureBox pole = targetTable.GetControlFromPosition(ruch.Y + 1, ruch.X + 1) as PictureBox;
+                TableLayoutPanel tabelaCel = ruch.CzyStrzalWGracza ? tablePlanszaGracza : tablePlanszaKomputera;
+                PictureBox pole = ZnajdzPole(tabelaCel, ruch.X, ruch.Y);
 
                 if (pole != null)
                 {
-                    switch (ruch.Wynik)
-                    {
-                        case WynikStrzalu.Pudlo:
-                            pole.BackColor = Settings.Instance.KolorPudlo;
-                            break;
-                        case WynikStrzalu.Trafienie:
-                            pole.BackColor = Settings.Instance.KolorTrafiony;
-                            break;
-                        case WynikStrzalu.Zatopienie:
-                            PomalujZatopionyStatek(targetTable, pole);
-                            break;
-                    }
+                    ZaktualizujWygladPola(pole, ruch.Wynik);
                     pole.Refresh();
                 }
             }
 
-            string zwyciezca = HistoriaGry.Instance.Zwyciezca;
-            MessageBox.Show($"Koniec powtórki. Wygrał: {zwyciezca}", "Replay", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"Koniec powtórki. Zwycięzca: {_historia.Zwyciezca}", "Replay", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private PictureBox ZnajdzPole(TableLayoutPanel tabela, int x, int y)
+        {
+            foreach (Control c in tabela.Controls)
+            {
+                if (c is PictureBox box && box.Tag is DanePola dane)
+                {
+                    if (dane.Wspolrzedne.X == x && dane.Wspolrzedne.Y == y)
+                        return box;
+                }
+            }
+            return null;
+        }
+
+        private void ZaktualizujWygladPola(PictureBox box, WynikStrzalu wynik)
+        {
+            switch (wynik)
+            {
+                case WynikStrzalu.Pudlo:
+                    box.BackColor = Settings.Instance.KolorPudlo;
+                    break;
+                case WynikStrzalu.Trafienie:
+                    box.BackColor = Settings.Instance.KolorTrafiony;
+                    break;
+                case WynikStrzalu.Zatopienie:
+                    TableLayoutPanel tabela = (TableLayoutPanel)box.Parent;
+                    PomalujZatopionyStatek(tabela, box);
+                    break;
+            }
         }
 
         private void PomalujZatopionyStatek(TableLayoutPanel tabela, PictureBox ostatniTrafionyBox)
         {
-            if (!(ostatniTrafionyBox.Tag is DanePola daneOstatniego) || daneOstatniego.Statek == null)
-                return;
+            DanePola daneOstatniego = ostatniTrafionyBox.Tag as DanePola;
+            if (daneOstatniego == null || daneOstatniego.Statek == null) return;
 
             Statek zatopionyStatek = daneOstatniego.Statek;
 
             foreach (Control c in tabela.Controls)
             {
-                if (c is PictureBox pole && c.Tag is DanePola dane)
+                if (c is PictureBox pole && pole.Tag is DanePola dane)
                 {
                     if (dane.Statek == zatopionyStatek)
                     {
@@ -158,11 +169,6 @@ namespace ZTP___Statki
             int bok = Math.Min(dostepnaSzerokosc, dostepnaWysokosc);
             bok = bok - (bok % wymiar);
             table.Size = new Size(bok, bok);
-
-            table.Location = new Point(
-                table == tablePlanszaGracza ? 50 : this.ClientSize.Width - table.Width - 50,
-                (this.ClientSize.Height - table.Height) / 2 + 20
-            );
         }
     }
 }

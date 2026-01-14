@@ -13,6 +13,7 @@ namespace ZTP___Statki
         private CheckBox _chkDzwiek;
         private Label _lblPoziom;
         private FlowLayoutPanel _pnlMenuGorny;
+        private HistoriaGry _historia = new HistoriaGry();
 
         private void InicjalizujMenu()
         {
@@ -81,7 +82,7 @@ namespace ZTP___Statki
 
         private void FormRozstawianie_Load(object sender, EventArgs e)
         {
-            HistoriaGry.Instance.Wyczysc();
+            _historia.Wyczysc();
 
             IPlanszaBuilder builder = new PlanszaBuilder();
             PlanszaBuilderDirector director = new PlanszaBuilderDirector(builder);
@@ -113,9 +114,9 @@ namespace ZTP___Statki
                 }
                 var ukladGracza = back.PobierzUstawienieStatkow();
 
-                HistoriaGry.Instance.ZapiszRozstawienie(ukladGracza, null);
+                _historia.ZapiszRozstawienie(ukladGracza, null);
 
-                FormPlansza gra = new FormPlansza(back);
+                FormPlansza gra = new FormPlansza(back, _historia);
                 this.Hide();
                 gra.ShowDialog();
                 this.Close();

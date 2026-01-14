@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ZTP___Statki
 {
     public class HistoriaGry
     {
-        private static HistoriaGry _instance;
-        public static HistoriaGry Instance => _instance ?? (_instance = new HistoriaGry());
-
         private List<KomendaStrzalu> _historiaRuchow;
         private List<StatekInfo> _poczatkowyStanGracza;
         private List<StatekInfo> _poczatkowyStanKomputera;
@@ -18,7 +14,7 @@ namespace ZTP___Statki
         public List<StatekInfo> StanKomputera => _poczatkowyStanKomputera;
         public string Zwyciezca { get; set; }
 
-        private HistoriaGry()
+        public HistoriaGry()
         {
             Wyczysc();
         }

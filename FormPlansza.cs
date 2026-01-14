@@ -12,14 +12,16 @@ namespace ZTP___Statki
         private KomputerGracz _komputer;
         private System.Media.SoundPlayer _odtwarzaczMuzyki;
         private bool _turaGracza = true;
+        private HistoriaGry _historia;
 
         public FormPlansza()
         {
             InitializeComponent();
         }
 
-        public FormPlansza(PlanszaLogiczna planszaGracza) : this()
+        public FormPlansza(PlanszaLogiczna planszaGracza, HistoriaGry historia) : this()
         {
+            _historia = historia;
             _planszaGracza = planszaGracza;
 
             IStrategiaStrzelania strategia;
@@ -43,7 +45,7 @@ namespace ZTP___Statki
             List<Statek> flotaKomputera = fasada.UtworzStandardowaFlote();
             _komputer.LosujUstawienieStatkow(flotaKomputera);
 
-            HistoriaGry.Instance.ZapiszRozstawienie(null, _komputer.Plansza.PobierzUstawienieStatkow());
+            _historia.ZapiszRozstawienie(null, _komputer.Plansza.PobierzUstawienieStatkow());
 
             BudujWidokPlanszy(_planszaGracza, tablePlanszaGracza, false);
             BudujWidokPlanszy(_komputer.Plansza, tablePlanszaKomputera, true);
@@ -135,7 +137,7 @@ namespace ZTP___Statki
 
             KomendaStrzalu strzal = new KomendaStrzalu(_komputer.Plansza, x, y, false);
             strzal.Wykonaj();
-            HistoriaGry.Instance.DodajRuch(strzal);
+            _historia.DodajRuch(strzal); // Użycie lokalnej instancji
 
             try
             {
@@ -149,7 +151,7 @@ namespace ZTP___Statki
             if (_komputer.Plansza.CzyWszystkieStatkiZatopione())
             {
                 if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
-                HistoriaGry.Instance.Zwyciezca = "Gracz";
+                _historia.Zwyciezca = "Gracz"; // Użycie lokalnej instancji
                 KoniecGry("Zwycięstwo!");
                 return;
             }
@@ -173,7 +175,7 @@ namespace ZTP___Statki
 
                 KomendaStrzalu strzal = new KomendaStrzalu(_planszaGracza, cel.X, cel.Y, true);
                 strzal.Wykonaj();
-                HistoriaGry.Instance.DodajRuch(strzal);
+                _historia.DodajRuch(strzal); // Użycie lokalnej instancji
 
                 WynikStrzalu wynik = strzal.Wynik;
 
@@ -187,7 +189,7 @@ namespace ZTP___Statki
                 if (_planszaGracza.CzyWszystkieStatkiZatopione())
                 {
                     if (_odtwarzaczMuzyki != null) _odtwarzaczMuzyki.Stop();
-                    HistoriaGry.Instance.Zwyciezca = "Komputer";
+                    _historia.Zwyciezca = "Komputer"; // Użycie lokalnej instancji
                     KoniecGry("Przegrana!");
                     return;
                 }
@@ -205,7 +207,7 @@ namespace ZTP___Statki
             if (res == DialogResult.Yes)
             {
                 this.Hide();
-                FormReplay replay = new FormReplay();
+                FormReplay replay = new FormReplay(_historia);
                 replay.ShowDialog();
             }
             this.Close();
